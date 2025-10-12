@@ -1,0 +1,215 @@
+:root {
+  /* === Colors (from design.md) === */
+  --color-primary-blue-deep: #0000A8;
+  --color-primary-blue-medium: #5555FF;
+  --color-primary-blue-light: #A9A9FF;
+  --color-primary-cyan: #00A8A8;
+  --color-secondary-yellow: #FFFF00;
+
+  --color-neutral-gray-dark: #848484;
+  --color-neutral-gray-medium: #C6C6C6;
+  --color-neutral-gray-light: #FFFFFF; /* note: same as neutral white per spec */
+  --color-neutral-black: #000000;
+  --color-neutral-white: #FFFFFF;
+
+  --color-text-primary: var(--color-neutral-black);
+  --color-text-inverse: var(--color-neutral-white);
+  --color-text-special: var(--color-secondary-yellow);
+
+  --color-border-dark: var(--color-neutral-gray-dark);
+  --color-border-light: var(--color-neutral-white);
+
+  /* === Typography === */
+  --font-family-pixel: "Neo둥근모", "Dotum", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-weight-regular: 400;
+
+  --font-size-sm: 12px; /* status bar */
+  --font-size-md: 16px; /* buttons, falling words */
+  --font-size-lg: 18px; /* window title */
+
+  /* === Spacing (base 4px scale) === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+
+  /* === Borders & Effects === */
+  --border-width-sm: 1px;
+  --border-width-md: 2px;
+  --radius-none: 0;
+
+  --shadow-none: none;
+
+  /* Layering */
+  --z-overlay: 8000;
+  --z-modal: 9000;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-neutral-gray-medium);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-pixel);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-md);
+  line-height: 1.35;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: none; /* crisper pixel-like look */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========== Bevel Utilities =========== */
+.bevel-outset {
+  border-top: var(--border-width-sm) solid var(--color-border-light);
+  border-left: var(--border-width-sm) solid var(--color-border-light);
+  border-right: var(--border-width-sm) solid var(--color-border-dark);
+  border-bottom: var(--border-width-sm) solid var(--color-border-dark);
+  border-radius: var(--radius-none);
+}
+
+.bevel-inset {
+  border-top: var(--border-width-sm) solid var(--color-border-dark);
+  border-left: var(--border-width-sm) solid var(--color-border-dark);
+  border-right: var(--border-width-sm) solid var(--color-border-light);
+  border-bottom: var(--border-width-sm) solid var(--color-border-light);
+  border-radius: var(--radius-none);
+}
+
+/* =========== Retro Window =========== */
+.retro-window {
+  background: var(--color-neutral-gray-medium);
+  border: var(--border-width-md) solid var(--color-neutral-black);
+  box-shadow: var(--shadow-none);
+}
+
+.retro-titlebar {
+  background: var(--color-primary-blue-deep);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.retro-window__body {
+  padding: var(--spacing-sm);
+  background: var(--color-neutral-gray-medium);
+}
+
+/* =========== Retro Button =========== */
+.retro-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-neutral-gray-medium);
+  padding: calc(var(--spacing-xs) + 1px) var(--spacing-md);
+  cursor: pointer;
+  border-radius: var(--radius-none);
+  text-decoration: none;
+  line-height: 1;
+}
+.retro-button:is(:hover, :focus-visible) {
+  filter: brightness(1.02);
+  outline: none;
+}
+.retro-button:active,
+.retro-button--pressed {
+  transform: translateY(1px);
+}
+.retro-button.bevel-outset:active,
+.retro-button--pressed.bevel-outset {
+  /* flip to inset look on press */
+  border-top-color: var(--color-border-dark);
+  border-left-color: var(--color-border-dark);
+  border-right-color: var(--color-border-light);
+  border-bottom-color: var(--color-border-light);
+}
+
+/* =========== Retro Input =========== */
+.retro-input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-neutral-white);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-none);
+  outline: none;
+  font: inherit;
+}
+.retro-input:focus {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08) inset;
+}
+
+/* =========== Modal =========== */
+.retro-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: var(--z-overlay);
+}
+.retro-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 360px;
+  z-index: var(--z-modal);
+}
+
+/* =========== HUD Helpers =========== */
+.hud {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-md);
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  background: var(--color-neutral-gray-medium);
+}
+
+.hud__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* =========== Utility Spacing =========== */
+.p-xs { padding: var(--spacing-xs); }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+
+.mt-xs { margin-top: var(--spacing-xs); }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+/* =========== Pixel helpers =========== */
+.pixel-font {
+  font-family: var(--font-family-pixel);
+  -webkit-font-smoothing: none;
+  text-rendering: optimizeSpeed;
+}
+
+.pixel-image {
+  image-rendering: pixelated;
+}
+
+/* =========== Title styles =========== */
+.titlebar-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-inverse);
+}
+
+.text-special {
+  color: var(--color-text-special);
+}

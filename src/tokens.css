@@ -1,0 +1,437 @@
+@font-face {
+  font-family: 'NeoDunggeunmo';
+  src: url('/neodgm.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  /* === Colors (from design.md) === */
+  --color-primary-blue-deep: #0000A8;
+  --color-primary-blue-medium: #5555FF;
+  --color-primary-blue-light: #A9A9FF;
+  --color-primary-cyan: #00A8A8;
+  --color-secondary-yellow: #FFFF00;
+
+  --color-neutral-gray-dark: #848484;
+  --color-neutral-gray-medium: #C6C6C6;
+  --color-neutral-gray-light: #FFFFFF; /* note: same as neutral white per spec */
+  --color-neutral-black: #000000;
+  --color-neutral-white: #FFFFFF;
+
+  --color-text-primary: var(--color-neutral-black);
+  --color-text-inverse: var(--color-neutral-white);
+  --color-text-special: var(--color-secondary-yellow);
+
+  --color-border-dark: var(--color-neutral-gray-dark);
+  --color-border-light: var(--color-neutral-white);
+
+  /* === Typography === */
+  --font-family-pixel: "NeoDunggeunmo", "Neo둥근모", "Dotum", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-weight-regular: 400;
+
+  --font-size-sm: 12px; /* status bar */
+  --font-size-md: 16px; /* buttons, falling words */
+  --font-size-lg: 18px; /* window title */
+
+  /* === Spacing (base 4px scale) === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+
+  /* === Borders & Effects === */
+  --border-width-sm: 1px;
+  --border-width-md: 2px;
+  --radius-none: 0;
+
+  --shadow-none: none;
+
+  /* Layering */
+  --z-overlay: 8000;
+  --z-modal: 9000;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-neutral-gray-medium);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-pixel);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-md);
+  line-height: 1.35;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: none; /* crisper pixel-like look */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========== Bevel Utilities =========== */
+.bevel-outset {
+  border-top: var(--border-width-sm) solid var(--color-border-light);
+  border-left: var(--border-width-sm) solid var(--color-border-light);
+  border-right: var(--border-width-sm) solid var(--color-border-dark);
+  border-bottom: var(--border-width-sm) solid var(--color-border-dark);
+  border-radius: var(--radius-none);
+}
+
+.bevel-inset {
+  border-top: var(--border-width-sm) solid var(--color-border-dark);
+  border-left: var(--border-width-sm) solid var(--color-border-dark);
+  border-right: var(--border-width-sm) solid var(--color-border-light);
+  border-bottom: var(--border-width-sm) solid var(--color-border-light);
+  border-radius: var(--radius-none);
+}
+
+/* =========== Retro Window =========== */
+.retro-window {
+  background: var(--color-neutral-gray-medium);
+  border: var(--border-width-md) solid var(--color-neutral-black);
+  box-shadow: var(--shadow-none);
+}
+
+.retro-titlebar {
+  background: var(--color-primary-blue-deep);
+  color: var(--color-text-inverse);
+  font-size: 24px; /* Increased font size */
+  padding: var(--spacing-sm) var(--spacing-md); /* Increased padding for height */
+  display: flex;
+  align-items: center;
+  user-select: none;
+  height: 40px; /* Increased height */
+}
+
+.retro-window__body {
+  padding: var(--spacing-sm);
+  background: var(--color-neutral-gray-medium);
+}
+
+/* =========== Retro Button =========== */
+.retro-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-neutral-gray-medium);
+  padding: calc(var(--spacing-xs) + 1px) var(--spacing-md);
+  cursor: pointer;
+  border-radius: var(--radius-none);
+  text-decoration: none;
+  line-height: 1;
+}
+.retro-button:is(:hover, :focus-visible) {
+  filter: brightness(1.02);
+  outline: none;
+}
+.retro-button:active,
+.retro-button--pressed {
+  transform: translateY(1px);
+}
+.retro-button.bevel-outset:active,
+.retro-button--pressed.bevel-outset {
+  /* flip to inset look on press */
+  border-top-color: var(--color-border-dark);
+  border-left-color: var(--color-border-dark);
+  border-right-color: var(--color-border-light);
+  border-bottom-color: var(--color-border-light);
+}
+
+/* =========== Retro Input =========== */
+.retro-input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-neutral-white);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-none);
+  outline: none;
+  font: inherit;
+}
+.retro-input:focus {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08) inset;
+}
+
+/* =========== Modal =========== */
+.retro-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: var(--z-overlay);
+}
+.retro-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 360px;
+  z-index: var(--z-modal);
+}
+
+/* =========== HUD Helpers =========== */
+.hud {
+  display: grid;
+  grid-auto-flow: column;
+  gap: var(--spacing-md);
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  background: var(--color-neutral-gray-medium);
+}
+
+.hud__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* =========== Utility Spacing =========== */
+.p-xs { padding: var(--spacing-xs); }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+
+.mt-xs { margin-top: var(--spacing-xs); }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+/* =========== Pixel helpers =========== */
+.pixel-font {
+  font-family: var(--font-family-pixel);
+  -webkit-font-smoothing: none;
+  text-rendering: optimizeSpeed;
+}
+
+.pixel-image {
+  image-rendering: pixelated;
+}
+
+/* =========== Title styles =========== */
+.titlebar-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-inverse);
+}
+
+.text-special {
+  color: var(--color-text-special);
+}
+
+/* =========== GameScreen Specific Styles =========== */
+.game-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-container {
+  position: absolute;
+  width: 100%; /* Ensure it spans full width */
+  top: 0;
+  left: 0;
+  padding: var(--spacing-xs) var(--spacing-md);
+  box-sizing: border-box;
+  font-size: 24px;
+  color: var(--color-neutral-black);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* Left, Center, Right */
+  align-items: center;
+  z-index: 10;
+  background-color: var(--color-primary-cyan);
+}
+.hud-item-left, .hud-item-center, .hud-item-right {
+  padding: 0 var(--spacing-sm);
+}
+.hud-item-left { text-align: left; }
+.hud-item-center { text-align: center; }
+.hud-item-right { text-align: right; }
+
+.word {
+  position: absolute;
+  font-size: 24px;
+  font-family: var(--font-family-pixel);
+  padding: 2px 4px;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+}
+
+.special-word {
+  color: var(--color-secondary-yellow);
+  text-shadow: 1px 1px 0px #000;
+}
+
+.game-footer {
+  position: relative;
+  flex-shrink: 0;
+  height: 80px;
+}
+
+.foundation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #333;
+  border-top: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space out blocks and input */
+  padding: 0 var(--spacing-md);
+}
+
+.blocks-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* Single row of 6 */
+  gap: 4px;
+  width: 35%; /* Adjust width to fit */
+  height: 25px;
+}
+
+.life-block {
+  background-color: var(--color-secondary-yellow);
+  border: 1px solid var(--color-neutral-black);
+  border-top-color: var(--color-neutral-white);
+  border-left-color: var(--color-neutral-white);
+  border-right-color: var(--color-neutral-gray-dark);
+  border-bottom-color: var(--color-neutral-gray-dark);
+  transition: opacity 0.3s ease;
+}
+
+.wave-container {
+  position: absolute;
+  bottom: 60px; /* On top of foundation */
+  left: 0;
+  right: 0;
+  height: 20px;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.wave-container::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background-image: radial-gradient(circle at 10px -5px, transparent 12px, var(--color-primary-blue-deep) 13px);
+  background-size: 20px 40px;
+  animation: wave-animation 1.5s linear infinite;
+}
+
+@keyframes wave-animation {
+  from { transform: translateX(0); }
+  to { transform: translateX(-20px); }
+}
+
+.input-form {
+  width: 25%; /* Take up the remaining space */
+  max-width: 280px;
+  z-index: 20; /* Ensure it is on top */
+}
+
+.game-input {
+  width: 100%;
+  height: 40px;
+  padding: var(--spacing-sm);
+  font-family: var(--font-family-pixel);
+  font-size: 30px; /* Increased font size */
+  text-align: center;
+  background-color: var(--color-neutral-white);
+  border: 2px solid;
+  border-top-color: var(--color-neutral-gray-dark);
+  border-left-color: var(--color-neutral-gray-dark);
+  border-right-color: var(--color-neutral-white);
+  border-bottom-color: var(--color-neutral-white);
+  border-radius: 0;
+  outline: none;
+  color: var(--color-text-primary); /* Reverted to black */
+  font-weight: var(--font-weight-regular);
+}
+
+/* =========== Virus Indicator =========== */
+.virus-indicator {
+  display: inline-block;
+  color: var(--color-secondary-yellow);
+  font-size: 22px; /* Increased font size */
+  padding: 2px 8px;
+  border: 1px solid var(--color-neutral-black);
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 0px #000;
+  /* Aligns within the flexbox of the title bar */
+}
+
+/* =========== Landmine Style =========== */
+.landmine {
+  position: absolute;
+  width: 40px;
+  height: 20px;
+  background-color: var(--color-neutral-black);
+  border: 2px solid var(--color-neutral-white);
+  /* Text styles */
+  color: var(--color-secondary-yellow);
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========== Welcome Screen Styles =========== */
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #E0E0E0;
+  background-image: url('/desktop_bg.png');
+  background-position: center;
+  background-repeat: no-repeat; /* Prevent tiling */
+  position: relative;
+  font-weight: var(--font-weight-regular);
+  border: 1px solid #c0c0c0;
+  box-sizing: border-box;
+}
+
+.welcome-footer {
+  margin-top: 20px; /* Space below the login window */
+  font-size: 18px;
+  color: var(--color-neutral-white);
+  text-shadow: 1px 1px 1px #000;
+  text-align: center;
+}
+
+/* =========== Desktop Icon Styles =========== */
+.desktop-icons-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 20px;
+  max-width: 200px; /* Prevent icons from spanning the whole screen */
+}
+
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none; /* Remove underline from link */
+  color: var(--color-neutral-white);
+  font-size: 12px;
+  text-align: center;
+  width: 80px; /* Fixed width for each icon */
+}
+
+.desktop-icon__image {
+  width: 32px;
+  height: 32px;
+  background-color: #bdbdbd; /* Placeholder color for icon */
+  /* In a real scenario, you would use background-image for each icon class */
+  /* e.g., .my-computer { background-image: url('/icons/my-computer.png'); } */
+}

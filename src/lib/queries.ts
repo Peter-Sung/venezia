@@ -1,0 +1,91 @@
+import { supabase } from './supabaseClient';
+
+export const fetchWordsForStage = async (stage: number) => {
+  const { data, error } = await supabase
+    .from('words')
+    .select('text')
+    .lte('min_level', stage) // min_level <= stage
+    .gte('max_level', stage); // max_level >= stage
+
+  if (error) {
+    console.error('Error fetching words:', error);
+    throw new Error(error.message);
+  }
+
+  // The query returns an array of objects like [{ text: 'word1' }, { text: 'word2' }].
+  // We want to return an array of strings.
+  return data.map(item => item.text);
+};
+
+export const fetchStageSettings = async (stage: number) => {
+  const { data, error } = await supabase
+    .from('stage_settings')
+    .select('*')
+    .eq('stage_level', stage)
+    .single(); // stage_level is a primary key, so we expect a single result
+
+  if (error) {
+    console.error('Error fetching stage settings:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const fetchAllStageSettings = async () => {
+  const { data, error } = await supabase
+    .from('stage_settings')
+    .select('*')
+    .order('stage_level', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching all stage settings:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const updateHighScore = async ({ nickname, play_at, score }: { nickname: string; play_at: string; score: number; }) => {
+  const { error } = await supabase.rpc('update_high_score', {
+    p_nickname: nickname,
+    p_play_at: play_at,
+    p_score: score,
+  });
+
+  if (error) {
+    console.error('Error updating high score:', error);
+    throw new Error(error.message);
+  }
+
+  return null;
+};
+
+export const fetchRankings = async (nickname: string) => {
+  // 1. 상위 10명의 랭킹을 가져옵니다.
+  const { data: top10, error: top10Error } = await supabase
+    .from('scores')
+    .select('nickname, play_at, score')
+    .order('score', { ascending: false })
+    .limit(10);
+
+  if (top10Error) {
+    console.error('Error fetching top 10 rankings:', top10Error);
+    throw new Error(top10Error.message);
+  }
+
+  // 2. 현재 사용자의 최고 기록을 가져옵니다.
+  const { data: myBest, error: myBestError } = await supabase
+    .from('scores')
+    .select('nickname, play_at, score')
+    .eq('nickname', nickname)
+    .single();
+
+  // myBest는 없을 수도 있으므로 에러를 던지지 않습니다.
+  if (myBestError && myBestError.code !== 'PGRST116') { // PGRST116: row not found
+    console.error('Error fetching my best score:', myBestError);
+    throw new Error(myBestError.message);
+  }
+
+  return { top10, myBest };
+};

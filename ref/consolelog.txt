@@ -1,0 +1,162 @@
+[Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: true
+useWordManager.ts:129 [Effect Exit] Guard clause met.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:144 [Initial Spawn] Spawning first word.
+useWordManager.ts:134 [Timer Tick] Task function executed. Gang pending: false
+useWordManager.ts:102 [Spawn] Spawning single word
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
+useWordManager.ts:150 [Set Interval] Setting up timer with interval: 3000ms
+useWordManager.ts:154 [Cleanup] Clearing interval.
+useWordManager.ts:125 [Effect Run] Word generation effect is running. Status: playing isLoading: false
