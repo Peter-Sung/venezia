@@ -5,7 +5,7 @@ interface StageClearModalProps {
 }
 
 const StageClearModal: React.FC<StageClearModalProps> = ({ stage }) => {
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     if (countdown <= 0) return;

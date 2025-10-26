@@ -20,6 +20,12 @@ export const useWordManager = (
   const [landmines, setLandmines] = useState<Landmine[]>([]);
   const didGenerateInitialWord = useRef(false);
 
+  // Stale Closure 문제를 해결하기 위해 activeVirus 상태를 ref로 관리
+  const activeVirusRef = useRef(activeVirus);
+  useEffect(() => {
+    activeVirusRef.current = activeVirus;
+  }, [activeVirus]);
+
   const { data: wordList, isLoading: isLoadingWords } = useQuery({
     queryKey: ['words', stage],
     queryFn: () => fetchWordsForStage(stage),
@@ -124,6 +130,11 @@ export const useWordManager = (
     const generateWord = () => {
       if (!wordList || wordList.length === 0) return;
 
+      // 마취 바이러스가 활성화된 동안에는 새로운 단어를 생성하지 않음 (ref를 사용하여 최신 상태 참조)
+      if (activeVirusRef.current.type === 'stun' && activeVirusRef.current.duration > 0) {
+        return;
+      }
+
       setWords(prevWords => {
         // 겹치지 않도록 비어있는 컬럼 확인 (Y < 100px)
         const wordsNearTop = prevWords.filter(w => w.y < 100);
@@ -166,7 +177,7 @@ export const useWordManager = (
     const wordGenerator = setInterval(generateWord, spawnIntervalMs);
 
     return () => clearInterval(wordGenerator);
-  }, [gameStatus, isLoadingWords, isLoadingSettings, stageSettings, wordList, activeVirus]);
+  }, [gameStatus, isLoadingWords, isLoadingSettings, stageSettings, wordList]);
 
   // --- Word Management Functions ---
   const removeWordsByText = useCallback((text: string, onWordsRemoved: (removedWords: Word[]) => void): void => {

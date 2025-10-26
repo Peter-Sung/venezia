@@ -33,6 +33,14 @@ const AdminMenu: React.FC = () => {
               게임 시간 (clear_duration)
             </NavLink>
           </li>
+          <li style={{ marginBottom: '10px' }}>
+            <NavLink 
+              to="/admin/manage-words" 
+              style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
+            >
+              단어 관리 (manage_words)
+            </NavLink>
+          </li>
         </ul>
       </nav>
       <hr style={{ margin: '20px 0' }} />

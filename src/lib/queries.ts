@@ -89,3 +89,56 @@ export const fetchRankings = async (nickname: string) => {
 
   return { top10, myBest };
 };
+
+export const fetchWordsPaginated = async (page: number, pageSize: number, searchTerm: string) => {
+  const { data, error } = await supabase.rpc('get_words_paginated', {
+    page_number: page,
+    page_size: pageSize,
+    search_term: searchTerm,
+  });
+
+  if (error) {
+    console.error('Error fetching paginated words:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const addWords = async (words: { text: string; min_level: number; max_level: number }[]) => {
+  const { error } = await supabase.rpc('add_words', { new_words: words });
+
+  if (error) {
+    console.error('Error adding words:', error);
+    throw new Error(error.message);
+  }
+
+  return null;
+};
+
+export const updateWordLevels = async ({ id, min_level, max_level }: { id: bigint; min_level: number; max_level: number }) => {
+  const { error } = await supabase.rpc('update_word_levels', {
+    word_id: id,
+    new_min_level: min_level,
+    new_max_level: max_level,
+  });
+
+  if (error) {
+    console.error('Error updating word levels:', error);
+    throw new Error(error.message);
+  }
+
+  return null;
+};
+
+export const deleteWord = async (id: bigint) => {
+  const { error } = await supabase.rpc('delete_word', { word_id: id });
+
+  if (error) {
+    console.error('Error deleting word:', error);
+    throw new Error(error.message);
+  }
+
+  return null;
+};
+
