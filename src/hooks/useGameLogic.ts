@@ -32,7 +32,7 @@ export interface Landmine {
 
 let wordId = 0;
 
-export const useGameLogic = (nickname: string, startStage: number) => {
+export const useGameLogic = (profile: Profile, startStage: number) => {
 
   const [inputValue, setInputValue] = useState('');
   const [score, setScore] = useState(0);
@@ -70,7 +70,7 @@ export const useGameLogic = (nickname: string, startStage: number) => {
     mutationFn: updateHighScore,
     onSuccess: () => {
       // 점수 제출 성공 시, 랭킹 쿼리를 무효화하여 다시 불러오게 함
-      queryClient.invalidateQueries({ queryKey: ['rankings', nickname] });
+      queryClient.invalidateQueries({ queryKey: ['rankings', profile.nickname] });
     },
   });
 
@@ -168,12 +168,13 @@ export const useGameLogic = (nickname: string, startStage: number) => {
     if (remainingBlocks <= 0 && gameStatus !== 'gameOver') {
       setGameStatus('gameOver');
       submitScore({ 
-        nickname: nickname,
+        nickname: profile.nickname,
         play_at: formatTime(totalPlayTime),
         score: score
       });
     }
-  }, [remainingBlocks, gameStatus, nickname, score, totalPlayTime, submitScore, formatTime]);
+  }, [remainingBlocks, gameStatus, profile, score, totalPlayTime, submitScore, formatTime]);
+
 
   // --- User Input Handling ---
   const handleSubmit = (e: React.FormEvent) => {

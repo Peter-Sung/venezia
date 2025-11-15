@@ -7,8 +7,25 @@
 
 ## 1) Project Quick Facts
 - Stack: React+Vite+TS, DOM/CSS Animations, Zustand, Supabase, Vitest, Playwright
-- App Paths: `src/app`, `src/game`, `src/design-tokens/tokens.css`
+- App Paths: `src/components`, `src/hooks`, `src/admin`, `src/lib`, `src/domains`
 - Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+
+## 1.5) Architectural Principles & Data Flow
+
+### 상태 관리 (State Management)
+- **React Query**: 서버 상태(Supabase 데이터) 관리를 전담합니다. 데이터 fetching, caching, 비동기 상태 처리에 사용합니다.
+- **Zustand**: 클라이언트 전역 상태 관리에 사용합니다. (예: 게임 진행 상태, 모달 열림 여부, 닉네임 등)
+
+### 컴포넌트 설계 (Component Design)
+- `src/components`: 재사용 가능하고, 상태나 비즈니스 로직이 없는 순수한 UI 컴포넌트만 위치시킵니다.
+- `hooks` 또는 상위 페이지/레이아웃 컴포넌트에서 로직을 주입받아 사용합니다.
+
+### 스타일링 (Styling)
+- 모든 색상, 폰트, 간격 등 시각적 요소는 `src/tokens.css`에 정의된 CSS 변수를 사용해야 합니다.
+- 이는 프로젝트 전체의 일관된 레트로 테마를 유지하고, 임의의 스타일 값 사용을 지양하기 위함입니다.
+
+### 핵심 데이터 흐름 (Core Data Flow)
+- **게임 플레이**: 사용자 입력 → `useGameLogic` 훅의 `handleSubmit` 호출 → 단어 일치 시 점수 계산 및 상태 업데이트 → (필요시) Supabase RPC(`update_high_score`) 호출 → `React Query`가 캐시 무효화 및 데이터 갱신 → UI 업데이트
 
 ## 2) Commands (Cheat Sheet)
 - Dev: `pnpm dev`

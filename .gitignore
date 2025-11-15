@@ -117,3 +117,16 @@ dist
 # VitePress cache and temp files
 .vitepress/cache
 .vitepress/temp
+
+# Test results
+/playwright-report/
+/test-results/
+/e2e/
+playwright.config.ts
+
+# Supabase
+/supabase/.temp/
+*.db
+!*.example.db
+supabase/migrations/
+supabase/tests/

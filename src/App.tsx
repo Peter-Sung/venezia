@@ -30,15 +30,25 @@ const MainContent: React.FC = () => (
   </Routes>
 );
 
+// Define Profile type at a higher level
+interface Profile {
+  id: string;
+  nickname: string;
+}
+
+// ... (imports, but remove User from supabase-js if not used elsewhere)
+
+// ... (QueryClientProvider, MainContent)
+
 // 게임 관련 라우팅을 처리하는 내부 컴포넌트
 const Game: React.FC = () => {
   const [gameKey, setGameKey] = React.useState(0);
   const [appStatus, setAppStatus] = React.useState('welcome');
-  const [nickname, setNickname] = React.useState('');
+  const [profile, setProfile] = React.useState<Profile | null>(null);
   const [startStage, setStartStage] = React.useState(1);
 
-  const startGame = (name: string, stage: number) => {
-    setNickname(name);
+  const startGame = (profile: Profile, stage: number) => {
+    setProfile(profile);
     setStartStage(stage);
     setAppStatus('playing');
     setGameKey(prev => prev + 1); // 새 게임 시작 시 키 변경
@@ -46,6 +56,7 @@ const Game: React.FC = () => {
 
   const goToMain = () => {
     setAppStatus('welcome');
+    setProfile(null); // Go back to main should clear profile
   };
 
   const restartGame = () => {
@@ -57,7 +68,12 @@ const Game: React.FC = () => {
     return <Welcome onGameStart={startGame} />;
   }
 
-  return <GameScreen key={gameKey} nickname={nickname} startStage={startStage} onGoToMain={goToMain} onRestart={restartGame} />;
+  if (!profile) {
+    // This case should ideally not be reached if logic is correct
+    return <Welcome onGameStart={startGame} />;
+  }
+
+  return <GameScreen key={gameKey} profile={profile} startStage={startStage} onGoToMain={goToMain} onRestart={restartGame} />;
 };
 
 export default App;

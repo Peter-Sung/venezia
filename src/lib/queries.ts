@@ -17,6 +17,30 @@ export const fetchWordsForStage = async (stage: number) => {
   return data.map(item => item.text);
 };
 
+export const getPlayerProfile = async () => {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    console.error('Error getting session:', sessionError);
+    throw new Error(sessionError.message);
+  }
+  if (!sessionData.session) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('players')
+    .select('id, nickname, level, cumulative_points')
+    .eq('id', sessionData.session.user.id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching player profile:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 export const fetchStageSettings = async (stage: number) => {
   const { data, error } = await supabase
     .from('stage_settings')

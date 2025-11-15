@@ -142,18 +142,62 @@ body {
   border-bottom-color: var(--color-border-light);
 }
 
+.retro-button-inline {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-neutral-gray-medium);
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: var(--radius-none);
+  text-decoration: none;
+  line-height: 1;
+  vertical-align: middle; /* Align with surrounding text */
+}
+.retro-button-inline:is(:hover, :focus-visible) {
+  filter: brightness(1.02);
+  outline: none;
+}
+.retro-button-inline:active,
+.retro-button--pressed.bevel-outset {
+  transform: translateY(1px);
+}
+.retro-button-inline.bevel-outset:active,
+.retro-button--pressed.bevel-outset {
+  /* flip to inset look on press */
+  border-top-color: var(--color-border-dark);
+  border-left-color: var(--color-border-dark);
+  border-right-color: var(--color-border-light);
+  border-bottom-color: var(--color-border-light);
+}
+
 /* =========== Retro Input =========== */
 .retro-input {
   width: 100%;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-sm); /* Adjusted padding */
   background: var(--color-neutral-white);
   color: var(--color-text-primary);
   border-radius: var(--radius-none);
   outline: none;
-  font: inherit;
+  font-family: var(--font-family-pixel); /* Explicitly set font */
+  font-size: 18px; /* Increased font size */
 }
 .retro-input:focus {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.08) inset;
+}
+/* Apply project font to autofilled inputs */
+.retro-input:-webkit-autofill,
+.retro-input:-webkit-autofill:hover, 
+.retro-input:-webkit-autofill:focus, 
+.retro-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--color-text-primary);
+  font-family: var(--font-family-pixel);
+  font-size: 18px;
+  /* Use a long transition to override the browser's default background color */
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* =========== Modal =========== */

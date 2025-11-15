@@ -17,14 +17,14 @@ const EditFallDuration: React.FC = () => {
     queryFn: fetchAllStageSettings,
   });
 
-  const [durations, setDurations] = useState<Record<number, number>>({});
+  const [durations, setDurations] = useState<Record<number, number | string>>({});
 
   useEffect(() => {
     if (settings) {
       const initialDurations = settings.reduce((acc, setting) => {
         acc[setting.stage_level] = setting.fall_duration_seconds;
         return acc;
-      }, {} as Record<number, number>);
+      }, {} as Record<number, number | string>);
       setDurations(initialDurations);
     }
   }, [settings]);
@@ -46,11 +46,21 @@ const EditFallDuration: React.FC = () => {
   });
 
   const handleInputChange = (stage_level: number, value: string) => {
-    setDurations(prev => ({ ...prev, [stage_level]: Number(value) }));
+    const processedValue = value === '' ? '' : Number(value);
+    if (isNaN(processedValue as number)) {
+      return; // Prevent non-numeric input
+    }
+    setDurations(prev => ({ ...prev, [stage_level]: processedValue }));
   };
 
   const handleSaveAll = () => {
-    updateMutation.mutate(durations);
+    const durationsToSave: Record<number, number> = {};
+    Object.keys(durations).forEach(key => {
+      const stageLevel = Number(key);
+      const value = durations[stageLevel];
+      durationsToSave[stageLevel] = value === '' ? 0 : Number(value);
+    });
+    updateMutation.mutate(durationsToSave);
   };
 
   if (isLoading) return <div>로딩 중...</div>;
@@ -68,7 +78,7 @@ const EditFallDuration: React.FC = () => {
             <input 
               type="number"
               step="0.1"
-              value={durations[setting.stage_level] || ''}
+              value={durations[setting.stage_level] ?? ''}
               onChange={(e) => handleInputChange(setting.stage_level, e.target.value)}
               style={{ width: '100px' }}
             />

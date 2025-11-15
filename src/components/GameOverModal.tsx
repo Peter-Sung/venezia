@@ -52,7 +52,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({ nickname, score, onRestar
         <div>
           {top10.map((rank, index) => {
             const isMyRecordInTop10 = rank.nickname === nickname && rank.score === score;
-            const myRecordStyle = isMyRecordInTop10 ? { color: 'red', fontWeight: 'bold' } : {};
+            const myRecordStyle = isMyRecordInTop10 ? { color: 'red' } : {};
             return (
               <div key={rank.nickname} style={{ ...rowStyle, ...myRecordStyle }}>
                 <span style={{ width: '15%', textAlign: 'center' }}>{index + 1}</span>

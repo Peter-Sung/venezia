@@ -15,14 +15,14 @@ interface Word {
 
 interface NewWordEntry {
   text: string;
-  min_level: number;
-  max_level: number;
+  min_level: number | string;
+  max_level: number | string;
 }
 
 const ManageWords: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [editingWords, setEditingWords] = useState<Record<string, { min_level: number; max_level: number }>>({});
+  const [editingWords, setEditingWords] = useState<Record<string, { min_level: number | string; max_level: number | string }>>({});
   const [newWords, setNewWords] = useState<NewWordEntry[]>([{ text: '', min_level: 1, max_level: 3 }]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -53,7 +53,7 @@ const ManageWords: React.FC = () => {
       const initialEditingState = words.reduce((acc, word) => {
         acc[word.id.toString()] = { min_level: word.min_level, max_level: word.max_level };
         return acc;
-      }, {} as Record<string, { min_level: number; max_level: number }>);
+      }, {} as Record<string, { min_level: number | string; max_level: number | string }>);
       setEditingWords(initialEditingState);
     }
   }, [words]);
@@ -104,7 +104,19 @@ const ManageWords: React.FC = () => {
   };
 
   const handleSaveNewWords = () => {
-    const wordsToAdd = newWords.filter(word => word.text.trim() !== '');
+    const wordsToAdd = newWords
+      .filter(word => word.text.trim() !== '')
+      .map(word => {
+        const min_level = word.min_level === '' ? 0 : Number(word.min_level);
+        const max_level = word.max_level === '' ? 0 : Number(word.max_level);
+        if (isNaN(min_level) || isNaN(max_level)) {
+          alert('유효하지 않은 레벨 값이 있습니다. 숫자를 입력해주세요.');
+          return null;
+        }
+        return { text: word.text, min_level, max_level };
+      })
+      .filter((word): word is { text: string; min_level: number; max_level: number; } => word !== null);
+
     if (wordsToAdd.length > 0) {
       addMutation.mutate(wordsToAdd);
     }
@@ -113,14 +125,25 @@ const ManageWords: React.FC = () => {
   const handleUpdateWord = (id: bigint) => {
     const levels = editingWords[id.toString()];
     if (levels) {
-      updateMutation.mutate({ id, ...levels });
+      const min_level = levels.min_level === '' ? 0 : Number(levels.min_level);
+      const max_level = levels.max_level === '' ? 0 : Number(levels.max_level);
+      
+      if (isNaN(min_level) || isNaN(max_level)) {
+        alert('레벨은 숫자여야 합니다.');
+        return;
+      }
+      updateMutation.mutate({ id, min_level, max_level });
     }
   };
 
   const handleInputChange = (id: string, field: 'min_level' | 'max_level', value: string) => {
+    const processedValue = value === '' ? '' : parseInt(value, 10);
+    if (isNaN(processedValue as number)) {
+      return; // Prevent non-numeric characters from being entered
+    }
     setEditingWords(prev => ({
       ...prev,
-      [id]: { ...prev[id], [field]: Number(value) },
+      [id]: { ...prev[id], [field]: processedValue },
     }));
   };
 
@@ -185,9 +208,29 @@ const ManageWords: React.FC = () => {
           <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <input type="text" placeholder="단어 입력" value={word.text} onChange={(e) => handleNewWordChange(index, 'text', e.target.value)} style={{width: '200px'}} />
             <label>Min:</label>
-            <input type="number" value={word.min_level} onChange={(e) => handleNewWordChange(index, 'min_level', Number(e.target.value))} style={{width: '60px'}} />
+            <input 
+              type="number" 
+              value={word.min_level} 
+              onChange={(e) => {
+                const val = e.target.value;
+                const processedValue = val === '' ? '' : parseInt(val, 10);
+                if (isNaN(processedValue as number)) return;
+                handleNewWordChange(index, 'min_level', processedValue);
+              }} 
+              style={{width: '60px'}} 
+            />
             <label>Max:</label>
-            <input type="number" value={word.max_level} onChange={(e) => handleNewWordChange(index, 'max_level', Number(e.target.value))} style={{width: '60px'}} />
+            <input 
+              type="number" 
+              value={word.max_level} 
+              onChange={(e) => {
+                const val = e.target.value;
+                const processedValue = val === '' ? '' : parseInt(val, 10);
+                if (isNaN(processedValue as number)) return;
+                handleNewWordChange(index, 'max_level', processedValue);
+              }} 
+              style={{width: '60px'}} 
+            />
             <button onClick={() => handleRemoveNewWordRow(index)} style={{padding: '2px 6px'}}>-</button>
           </div>
         ))}

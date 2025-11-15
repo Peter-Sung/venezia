@@ -37,20 +37,75 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <form onSubmit={handleLogin}>
-        <h3>관리자 로그인</h3>
+    <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        fontFamily: 'var(--font-family-pixel)',
+        background: 'var(--color-primary-cyan)'
+    }}>
+      <form 
+        onSubmit={handleLogin} 
+        style={{ 
+            background: 'var(--color-neutral-gray-medium)',
+            padding: 'var(--spacing-lg)',
+            borderTop: 'var(--border-width-md) solid var(--color-border-light)',
+            borderLeft: 'var(--border-width-md) solid var(--color-border-light)',
+            borderRight: 'var(--border-width-md) solid var(--color-border-dark)',
+            borderBottom: 'var(--border-width-md) solid var(--color-border-dark)',
+            textAlign: 'center',
+            width: '400px'
+        }}
+      >
+        <h3 style={{ 
+            fontSize: 'var(--font-size-lg)', 
+            color: 'var(--color-text-primary)',
+            marginTop: 0,
+            marginBottom: 'var(--spacing-lg)'
+        }}>
+            관리자 로그인
+        </h3>
+        
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="암호를 입력하세요"
-          style={{ marginRight: '10px' }}
+          style={{
+            fontSize: 'var(--font-size-md)',
+            padding: 'var(--spacing-sm)',
+            fontFamily: 'inherit',
+            borderTop: 'var(--border-width-sm) solid var(--color-border-dark)',
+            borderLeft: 'var(--border-width-sm) solid var(--color-border-dark)',
+            borderRight: 'var(--border-width-sm) solid var(--color-border-light)',
+            borderBottom: 'var(--border-width-sm) solid var(--color-border-light)',
+            outline: 'none',
+            width: 'calc(100% - 2 * var(--spacing-sm))',
+            marginBottom: 'var(--spacing-md)'
+          }}
         />
-        <button type="submit" disabled={isLoading}>
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          style={{
+            fontSize: 'var(--font-size-md)',
+            padding: 'var(--spacing-sm) var(--spacing-lg)',
+            fontFamily: 'inherit',
+            color: 'var(--color-text-primary)',
+            background: 'var(--color-neutral-gray-medium)',
+            cursor: 'pointer',
+            width: '100%',
+            borderTop: 'var(--border-width-sm) solid var(--color-border-light)',
+            borderLeft: 'var(--border-width-sm) solid var(--color-border-light)',
+            borderRight: 'var(--border-width-sm) solid var(--color-border-dark)',
+            borderBottom: 'var(--border-width-sm) solid var(--color-border-dark)',
+          }}
+        >
           {isLoading ? '확인 중...' : '로그인'}
         </button>
-        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+
+        {error && <p style={{ color: 'red', marginTop: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)' }}>{error}</p>}
       </form>
     </div>
   );

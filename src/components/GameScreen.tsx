@@ -1,11 +1,15 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGameLogic, VirusType } from '../hooks/useGameLogic';
 import GameOverModal from './GameOverModal';
 import StageClearModal from './StageClearModal';
-import '../tokens.css'; // 스타일시트 임포트
+
+interface Profile {
+  id: string;
+  nickname: string;
+}
 
 interface GameScreenProps {
-  nickname: string;
+  profile: Profile;
   startStage: number;
   onGoToMain: () => void;
   onRestart: () => void;
@@ -26,7 +30,7 @@ const VIRUS_KOREAN_NAMES: Record<VirusType, string> = {
 // 5초 지속시간을 갖는 바이러스 목록
 const TIMED_VIRUSES: VirusType[] = ['stun', 'swift', 'sloth', 'hide-and-seek'];
 
-const GameScreen: React.FC<GameScreenProps> = ({ nickname, startStage, onGoToMain, onRestart }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain, onRestart }) => {
   const {
     words,
     inputValue,
@@ -41,7 +45,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ nickname, startStage, onGoToMai
     setInputValue,
     handleSubmit,
     isScoreSubmitSuccess,
-  } = useGameLogic(nickname, startStage);
+  } = useGameLogic(profile, startStage);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +56,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ nickname, startStage, onGoToMai
   }, [gameStatus]);
 
   if (gameStatus === 'gameOver') {
-    return <GameOverModal nickname={nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} />;
+    return <GameOverModal nickname={profile.nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} />;
   }
 
   // 12개의 기회 블록 렌더링
@@ -88,7 +92,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ nickname, startStage, onGoToMai
         <div style={{ flex: 1, textAlign: 'center' }}>
           <span style={{ fontSize: '26px' }}>
             (Typer :{' '}
-            <span style={{ color: 'var(--color-secondary-yellow)' }}>{nickname}</span>
+            <span style={{ color: 'var(--color-secondary-yellow)' }}>{profile.nickname}</span>
             {' '}님)
           </span>
         </div>
