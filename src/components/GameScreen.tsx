@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { useGameLogic, VirusType } from '../hooks/useGameLogic';
+import { useGameStore, useFormattedTime } from '../store/gameStore';
+import { useGameEffects } from '../hooks/useGameEffects';
+import { VirusType } from '../domains/types';
 import GameOverModal from './GameOverModal';
 import StageClearModal from './StageClearModal';
+import PauseGameModal from './PauseGameModal';
 
 interface Profile {
   id: string;
@@ -10,7 +13,6 @@ interface Profile {
 
 interface GameScreenProps {
   profile: Profile;
-  startStage: number;
   onGoToMain: () => void;
   onRestart: () => void;
 }
@@ -30,30 +32,42 @@ const VIRUS_KOREAN_NAMES: Record<VirusType, string> = {
 // 5초 지속시간을 갖는 바이러스 목록
 const TIMED_VIRUSES: VirusType[] = ['stun', 'swift', 'sloth', 'hide-and-seek'];
 
-const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain, onRestart }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart }) => {
+  const gameAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Zustand 스토어에서 상태와 액션을 가져옵니다.
   const {
     words,
     inputValue,
     score,
     remainingBlocks,
     gameStatus,
-    totalPlayTime,
     stage,
     activeVirus,
     landmines,
-    gameAreaRef,
+    isQuitModalVisible,
     setInputValue,
-    handleSubmit,
-    isScoreSubmitSuccess,
-  } = useGameLogic(profile, startStage);
+    submitInputValue,
+    hideQuitModal,
+  } = useGameStore();
+  
+  const formattedTotalPlayTime = useFormattedTime();
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
+  const { isScoreSubmitSuccess } = useGameEffects(gameAreaRef, profile, onGoToMain);
 
   useEffect(() => {
-    if (gameStatus === 'playing') {
+    // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
+    if (gameStatus === 'playing' && !isQuitModalVisible) {
       inputRef.current?.focus();
     }
-  }, [gameStatus]);
+  }, [gameStatus, isQuitModalVisible]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitInputValue();
+  };
 
   if (gameStatus === 'gameOver') {
     return <GameOverModal nickname={profile.nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} />;
@@ -86,8 +100,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain
   return (
       <div className="retro-window" style={{ width: '98vw', height: '95vh', margin: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div className="retro-titlebar">
-        <div style={{ flex: 1, textAlign: 'left' }}>
+        <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '26px' }}>베네치아</span>
+          <span style={{ fontSize: '20px', color: '#ddd' }}>[ESC:일시정지]</span>
         </div>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <span style={{ fontSize: '26px' }}>
@@ -101,6 +116,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain
         </div>
       </div>
       <div className="retro-window__body" style={{ display: 'flex', flexDirection: 'column', padding: 0, flex: 1 }}>
+        {isQuitModalVisible && <PauseGameModal onConfirm={onGoToMain} onCancel={hideQuitModal} />}
         {gameStatus === 'stageClear' && <StageClearModal stage={stage} />}
         
         <main 
@@ -116,7 +132,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain
           <div className="hud-container">
             <div className="hud-item-left">단계: {stage}</div>
             <div className="hud-item-center">점수: {score.toLocaleString('en-US')}</div>
-            <div className="hud-item-right">시간: {totalPlayTime}</div>
+            <div className="hud-item-right">시간: {formattedTotalPlayTime}</div>
           </div>
 
           {/* 떨어지는 단어들 */}
@@ -158,7 +174,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, startStage, onGoToMain
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 className="game-input"
-                disabled={gameStatus !== 'playing'}
+                disabled={gameStatus !== 'playing' || isQuitModalVisible}
                 autoComplete="off"
               />
             </form>

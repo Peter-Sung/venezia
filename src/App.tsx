@@ -6,6 +6,7 @@ import GameScreen from './components/GameScreen';
 import AdminLayout from './admin/AdminLayout';
 import { useScreenSize } from './hooks/useScreenSize'; // 화면 크기 훅 임포트
 import UnsupportedDevice from './components/UnsupportedDevice'; // 안내 컴포넌트 임포트
+import { useGameStore } from './store/gameStore';
 
 const queryClient = new QueryClient();
 
@@ -43,37 +44,46 @@ interface Profile {
 // 게임 관련 라우팅을 처리하는 내부 컴포넌트
 const Game: React.FC = () => {
   const [gameKey, setGameKey] = React.useState(0);
-  const [appStatus, setAppStatus] = React.useState('welcome');
+  // profile은 게임 세션 전체에서 사용되지만, 순수 게임 상태는 아니므로 여기서 관리
   const [profile, setProfile] = React.useState<Profile | null>(null);
-  const [startStage, setStartStage] = React.useState(1);
+  
+  // Zustand 스토어에서 게임 상태와 액션을 가져옵니다.
+  const { gameStatus, startGame, setGameStatus, wordList } = useGameStore();
 
-  const startGame = (profile: Profile, stage: number) => {
+  const handleStartGame = (profile: Profile, stage: number) => {
     setProfile(profile);
-    setStartStage(stage);
-    setAppStatus('playing');
+    // TODO: wordList를 여기서 fetch하고 startGame에 넘겨줘야 함.
+    // 우선 빈 배열로 시작합니다. useGameEffects에서 로드할 것입니다.
+    startGame(stage, []); 
     setGameKey(prev => prev + 1); // 새 게임 시작 시 키 변경
   };
 
   const goToMain = () => {
-    setAppStatus('welcome');
-    setProfile(null); // Go back to main should clear profile
+    setGameStatus('welcome');
+    setProfile(null);
   };
 
   const restartGame = () => {
-    setStartStage(1); // 1단계부터 시작
-    setGameKey(prev => prev + 1); // 키를 변경하여 GameScreen을 강제로 다시 마운트
+    if (profile) {
+      // 1단계부터 다시 시작
+      startGame(1, []);
+      setGameKey(prev => prev + 1);
+    }
   };
 
-  if (appStatus === 'welcome') {
-    return <Welcome onGameStart={startGame} />;
+  if (gameStatus === 'welcome') {
+    return <Welcome onGameStart={handleStartGame} />;
   }
 
   if (!profile) {
-    // This case should ideally not be reached if logic is correct
-    return <Welcome onGameStart={startGame} />;
+    // playing 상태인데 프로필이 없으면 다시 welcome으로 보냅니다.
+    setGameStatus('welcome');
+    return <Welcome onGameStart={handleStartGame} />;
   }
 
-  return <GameScreen key={gameKey} profile={profile} startStage={startStage} onGoToMain={goToMain} onRestart={restartGame} />;
+  // GameScreen은 게임 상태가 'playing', 'stageClear', 'gameOver'일 때 렌더링됩니다.
+  // startStage prop은 이제 store에서 관리되므로 필요 없습니다.
+  return <GameScreen key={gameKey} profile={profile} onGoToMain={goToMain} onRestart={restartGame} />;
 };
 
 export default App;

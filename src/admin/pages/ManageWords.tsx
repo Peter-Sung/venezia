@@ -26,6 +26,7 @@ const ManageWords: React.FC = () => {
   const [newWords, setNewWords] = useState<NewWordEntry[]>([{ text: '', min_level: 1, max_level: 3 }]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [levelFilter, setLevelFilter] = useState<number | 'all'>('all');
   const [hoveredRowId, setHoveredRowId] = useState<bigint | null>(null);
 
   useEffect(() => {
@@ -40,8 +41,8 @@ const ManageWords: React.FC = () => {
   }, [searchTerm]);
 
   const { data: words, isLoading, error } = useQuery<Word[], Error>({
-    queryKey: ['words', page, debouncedSearchTerm],
-    queryFn: () => fetchWordsPaginated(page, PAGE_SIZE, debouncedSearchTerm),
+    queryKey: ['words', page, debouncedSearchTerm, levelFilter],
+    queryFn: () => fetchWordsPaginated(page, PAGE_SIZE, debouncedSearchTerm, levelFilter === 'all' ? null : levelFilter),
     placeholderData: (previousData) => previousData,
   });
 
@@ -73,7 +74,7 @@ const ManageWords: React.FC = () => {
     mutationFn: updateWordLevels,
     onSuccess: (data, variables) => {
       alert(`${variables.id}번 단어가 수정되었습니다.`);
-      queryClient.invalidateQueries({ queryKey: ['words', page, debouncedSearchTerm] });
+      queryClient.invalidateQueries({ queryKey: ['words', page, debouncedSearchTerm, levelFilter] });
     },
     onError: (err) => alert(`오류: ${err.message}`),
   });
@@ -240,20 +241,57 @@ const ManageWords: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="등록된 단어 검색..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '300px', padding: '5px' }}
-        />
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <input
+            type="text"
+            placeholder="등록된 단어 검색..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '300px', padding: '5px', paddingRight: '30px' }}
+          />
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')}
+              style={{
+                position: 'absolute',
+                right: '5px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px',
+                color: '#888'
+              }}
+            >
+              X
+            </button>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <select 
+            value={levelFilter} 
+            onChange={(e) => {
+              const value = e.target.value;
+              setLevelFilter(value === 'all' ? 'all' : Number(value));
+              setPage(1); // Reset to page 1 on new filter
+            }}
+            style={{ padding: '5px' }}
+          >
+            <option value="all">모든 레벨</option>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map(level => (
+              <option key={level} value={level}>Level {level}</option>
+            ))}
+          </select>
+          <span>총 단어: {Number(totalCount).toLocaleString()}개</span>
+        </div>
       </div>
 
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th style={{width: '5%'}}>ID</th>
+            <th style={{width: '5%'}}>No</th>
             <th>Text</th>
             <th style={{width: '10%'}}>Min Level</th>
             <th style={{width: '10%'}}>Max Level</th>
@@ -261,14 +299,14 @@ const ManageWords: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {words?.map(word => (
+          {words?.map((word, index) => (
             <tr 
               key={word.id.toString()}
               onMouseEnter={() => setHoveredRowId(word.id)}
               onMouseLeave={() => setHoveredRowId(null)}
               style={{ backgroundColor: hoveredRowId === word.id ? '#f0f0f0' : 'transparent' }}
             >
-              <td style={{padding: '8px', borderBottom: '1px solid #ddd'}}>{word.id.toString()}</td>
+              <td style={{padding: '8px', borderBottom: '1px solid #ddd'}}>{(page - 1) * PAGE_SIZE + index + 1}</td>
               <td style={{padding: '8px', borderBottom: '1px solid #ddd'}}>{word.text}</td>
               <td style={{padding: '8px', borderBottom: '1px solid #ddd'}}>
                 <input type="number" value={editingWords[word.id.toString()]?.min_level ?? ''} onChange={(e) => handleInputChange(word.id.toString(), 'min_level', e.target.value)} style={{ width: '80%' }} />

@@ -1,0 +1,17 @@
+/* src/admin/admin.css */
+.admin-main-content input[type="text"],
+.admin-main-content input[type="number"],
+.admin-main-content input[type="password"],
+.admin-main-content select {
+  padding: 8px;
+  font-size: 1rem;
+  min-width: 80px; /* Ensure even small number inputs are a decent size */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.admin-main-content button {
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}

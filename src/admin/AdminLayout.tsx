@@ -6,6 +6,7 @@ import EditSpawnInterval from './pages/EditSpawnInterval';
 import EditClearDuration from './pages/EditClearDuration';
 import ManageWords from './pages/ManageWords';
 import AdminLogin from './pages/AdminLogin';
+import './admin.css';
 
 const AdminLayout: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,6 +17,14 @@ const AdminLayout: React.FC = () => {
     if (storedAuth === 'true') {
       setIsAuthenticated(true);
     }
+
+    // 브라우저 타이틀을 변경합니다.
+    document.title = 'Venezia (Admin)';
+
+    // 컴포넌트가 언마운트될 때 타이틀을 원래대로 복원합니다.
+    return () => {
+      document.title = 'Venezia';
+    };
   }, []);
 
   const handleLoginSuccess = () => {
@@ -31,7 +40,7 @@ const AdminLayout: React.FC = () => {
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       <AdminMenu />
-      <main style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+      <main className="admin-main-content" style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
         <Routes>
           <Route path="fall-duration" element={<EditFallDuration />} />
           <Route path="spawn-interval" element={<EditSpawnInterval />} />
@@ -45,3 +54,4 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
+

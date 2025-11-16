@@ -114,11 +114,12 @@ export const fetchRankings = async (nickname: string) => {
   return { top10, myBest };
 };
 
-export const fetchWordsPaginated = async (page: number, pageSize: number, searchTerm: string) => {
+export const fetchWordsPaginated = async (page: number, pageSize: number, searchTerm: string, levelFilter?: number | null) => {
   const { data, error } = await supabase.rpc('get_words_paginated', {
     page_number: page,
     page_size: pageSize,
     search_term: searchTerm,
+    level_filter: levelFilter,
   });
 
   if (error) {
