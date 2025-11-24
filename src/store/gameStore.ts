@@ -21,6 +21,7 @@ interface GameState {
   wordIdCounter: number;
   landmineIdCounter: number;
   isQuitModalVisible: boolean;
+  clearedWordsCount: number; // Added: Track number of cleared words
 }
 
 // Zustand 스토어의 액션(Actions) 타입을 정의합니다.
@@ -29,7 +30,7 @@ interface GameActions {
   setGameStatus: (status: GameStatus) => void;
   startGame: (startStage: number, initialWordList: string[]) => void;
   nextStage: () => void;
-  
+
   // Modals
   showQuitModal: () => void;
   hideQuitModal: () => void;
@@ -76,6 +77,7 @@ const initialState: Omit<GameState, 'wordList'> = {
   wordIdCounter: 0,
   landmineIdCounter: 0,
   isQuitModalVisible: false,
+  clearedWordsCount: 0,
 };
 
 // Zustand 스토어를 생성합니다.
@@ -97,6 +99,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       gameStatus: 'playing',
       stage: startStage,
       wordList: initialWordList,
+      clearedWordsCount: 0,
     });
   },
 
@@ -123,6 +126,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       inputValue: '',
       activeVirus: { type: null, duration: 0 },
       stageTime: 0,
+      clearedWordsCount: 0,
     }));
     // Note: The wordList for the new stage is fetched by useGameEffects
   },
@@ -160,7 +164,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       }
       return newWord;
     });
-    
+
     const survivingWords = nextWords.filter(word => {
       if (collidedWordIds.has(word.id)) return false;
       if (word.y > gameAreaHeight) {
@@ -198,7 +202,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       const j = Math.floor(Math.random() * (i + 1));
       [availableColumns[i], availableColumns[j]] = [availableColumns[j], availableColumns[i]];
     }
-    
+
     const spawnCount = Math.min(count, availableColumns.length);
     let currentWordId = wordIdCounter;
 
@@ -290,15 +294,24 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       if (specialWord) {
         const virus = VIRUS_TYPES[Math.floor(Math.random() * VIRUS_TYPES.length)];
         activateVirus(virus, specialWord);
+      } else {
+        // Only increment count if it's NOT a special word
+        // Also check if it was hidden? The requirement says "black words".
+        // Special words are usually colored. Normal words are black.
+        // If a word is hidden, it might be revealed and then typed?
+        // Requirement: "1. Yellow words (special) -> Exclude", "2. Virus removed -> Exclude", "3. Landmine -> Exclude"
+        // This function is for TYPING. So 2 and 3 are handled elsewhere (or not counted).
+        // We just need to exclude special words here.
+        set(state => ({ clearedWordsCount: state.clearedWordsCount + 1 }));
       }
-      
+
       const hiddenWord = removed.find(w => w.isHidden);
       if (hiddenWord) {
         toggleWordsVisibility(false);
         set({ activeVirus: { type: null, duration: 0 } });
       }
     }
-    
+
     set({ inputValue: '' });
   },
 }));
@@ -312,4 +325,3 @@ export const formatTime = (timeInMs: number) => {
 };
 
 export const useFormattedTime = () => useGameStore(state => formatTime(state.totalPlayTime));
-

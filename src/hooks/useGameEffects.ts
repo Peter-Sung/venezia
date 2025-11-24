@@ -113,7 +113,7 @@ export const useGameEffects = (
   // --- Word Generation ---
   useEffect(() => {
     if (store.gameStatus !== 'playing' || store.isQuitModalVisible || !stageSettings || store.wordList.length === 0) return;
-    
+
     const spawnIntervalMs = stageSettings.spawn_interval_seconds * 1000;
     const wordGenerator = setInterval(() => {
       if (store.activeVirus.type !== 'stun') {
@@ -138,7 +138,12 @@ export const useGameEffects = (
   // --- Stage & Game Status Management ---
   useEffect(() => {
     if (store.isQuitModalVisible) return;
-    if (stageSettings?.clear_duration_seconds && store.stageTime >= stageSettings.clear_duration_seconds * 1000) {
+    // Check if clearedWordsCount meets the target
+    // Note: stageSettings.clear_word_count might be undefined if the DB schema isn't updated or types aren't synced yet.
+    // We'll cast or assume it exists for now, but ideally we update the type definition.
+    const targetCount = (stageSettings as any)?.clear_word_count ?? 20; // Default to 20 if missing
+
+    if (store.clearedWordsCount >= targetCount) {
       if (store.gameStatus === 'playing') {
         store.setGameStatus('stageClear');
       }
@@ -150,7 +155,7 @@ export const useGameEffects = (
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [store.gameStatus, store.isQuitModalVisible, store.stageTime, stageSettings, store.setGameStatus, store.nextStage]);
+  }, [store.gameStatus, store.isQuitModalVisible, store.clearedWordsCount, stageSettings, store.setGameStatus, store.nextStage]);
 
   // --- Game Over Handler ---
   useEffect(() => {
@@ -167,5 +172,6 @@ export const useGameEffects = (
   return {
     isLoading: isLoadingSettings || isLoadingWords,
     isScoreSubmitSuccess,
+    stageSettings,
   };
 };

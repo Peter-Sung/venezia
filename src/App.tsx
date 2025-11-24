@@ -46,7 +46,7 @@ const Game: React.FC = () => {
   const [gameKey, setGameKey] = React.useState(0);
   // profile은 게임 세션 전체에서 사용되지만, 순수 게임 상태는 아니므로 여기서 관리
   const [profile, setProfile] = React.useState<Profile | null>(null);
-  
+
   // Zustand 스토어에서 게임 상태와 액션을 가져옵니다.
   const { gameStatus, startGame, setGameStatus, wordList } = useGameStore();
 
@@ -54,7 +54,7 @@ const Game: React.FC = () => {
     setProfile(profile);
     // TODO: wordList를 여기서 fetch하고 startGame에 넘겨줘야 함.
     // 우선 빈 배열로 시작합니다. useGameEffects에서 로드할 것입니다.
-    startGame(stage, []); 
+    startGame(stage, []);
     setGameKey(prev => prev + 1); // 새 게임 시작 시 키 변경
   };
 

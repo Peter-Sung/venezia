@@ -10,32 +10,32 @@ const AdminMenu: React.FC = () => {
       <nav>
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li style={{ marginBottom: '10px' }}>
-            <NavLink 
-              to="/admin/fall-duration" 
+            <NavLink
+              to="/admin/fall-duration"
               style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
             >
               하강 시간 (fall_duration)
             </NavLink>
           </li>
           <li style={{ marginBottom: '10px' }}>
-            <NavLink 
-              to="/admin/spawn-interval" 
+            <NavLink
+              to="/admin/spawn-interval"
               style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
             >
               출현 속도 (spawn_interval)
             </NavLink>
           </li>
           <li style={{ marginBottom: '10px' }}>
-            <NavLink 
-              to="/admin/clear-duration" 
+            <NavLink
+              to="/admin/clear-word-count"
               style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
             >
-              게임 시간 (clear_duration)
+              클리어 단어 수 (clear_word_count)
             </NavLink>
           </li>
           <li style={{ marginBottom: '10px' }}>
-            <NavLink 
-              to="/admin/manage-words" 
+            <NavLink
+              to="/admin/manage-words"
               style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
             >
               단어 관리 (manage_words)

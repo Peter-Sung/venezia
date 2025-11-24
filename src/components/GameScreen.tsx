@@ -50,12 +50,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
     setInputValue,
     submitInputValue,
     hideQuitModal,
+    clearedWordsCount,
   } = useGameStore();
-  
+
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
-  const { isScoreSubmitSuccess } = useGameEffects(gameAreaRef, profile, onGoToMain);
+  const { isScoreSubmitSuccess, stageSettings } = useGameEffects(gameAreaRef, profile, onGoToMain);
 
   useEffect(() => {
     // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
@@ -76,9 +77,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   // 12개의 기회 블록 렌더링
   const renderBlocks = (start: number, end: number) => {
     return Array.from({ length: 12 }).slice(start, end).map((_, i) => (
-      <div 
-        key={i + start} 
-        className="life-block" 
+      <div
+        key={i + start}
+        className="life-block"
         style={{ opacity: (i + start) < remainingBlocks ? 1 : 0.2 }}
       />
     ));
@@ -89,7 +90,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
 
     const name = VIRUS_KOREAN_NAMES[activeVirus.type];
     const isTimed = TIMED_VIRUSES.includes(activeVirus.type);
-    
+
     return (
       <div className="virus-indicator">
         {name} 실행{isTimed ? ` (${activeVirus.duration}초)` : ''}
@@ -98,7 +99,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   };
 
   return (
-      <div className="retro-window" style={{ width: '98vw', height: '95vh', margin: 'auto', display: 'flex', flexDirection: 'column' }}>
+    <div className="retro-window" style={{ width: '98vw', height: '95vh', margin: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div className="retro-titlebar">
         <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '26px' }}>베네치아</span>
@@ -118,12 +119,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
       <div className="retro-window__body" style={{ display: 'flex', flexDirection: 'column', padding: 0, flex: 1 }}>
         {isQuitModalVisible && <PauseGameModal onConfirm={onGoToMain} onCancel={hideQuitModal} />}
         {gameStatus === 'stageClear' && <StageClearModal stage={stage} />}
-        
-        <main 
-          ref={gameAreaRef} 
-          className="game-area" 
+
+        <main
+          ref={gameAreaRef}
+          className="game-area"
           style={{
-            backgroundColor: 'var(--color-primary-cyan)', 
+            backgroundColor: 'var(--color-primary-cyan)',
             color: 'var(--color-neutral-black)',
             position: 'relative'
           }}
@@ -134,19 +135,22 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
             <div className="hud-item-center">점수: {score.toLocaleString('en-US')}</div>
             <div className="hud-item-right">시간: {formattedTotalPlayTime}</div>
           </div>
+          <div className="hud-container" style={{ marginTop: '5px', fontSize: '14px', color: '#ff0' }}>
+            목표: {clearedWordsCount} / {(stageSettings as any)?.clear_word_count ?? 20}
+          </div>
 
           {/* 떨어지는 단어들 */}
           {words.map(word => {
-              const isSpecial = word.isSpecial;
-              return (
-                  <div 
-                    key={word.id} 
-                    className={`word ${isSpecial ? 'special-word' : ''}`}
-                    style={{ left: `${word.x * (100/12)}%`, top: word.y }}
-                  >
-                      {word.isHidden ? '????' : word.text}
-                  </div>
-              )
+            const isSpecial = word.isSpecial;
+            return (
+              <div
+                key={word.id}
+                className={`word ${isSpecial ? 'special-word' : ''}`}
+                style={{ left: `${word.x * (100 / 12)}%`, top: word.y }}
+              >
+                {word.isHidden ? '????' : word.text}
+              </div>
+            )
           })}
 
           {/* 지뢰들 */}
@@ -154,13 +158,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
             <div
               key={`landmine-${landmine.id}`}
               className="landmine"
-              style={{ left: `${landmine.x * (100/12)}%`, top: landmine.y }}
+              style={{ left: `${landmine.x * (100 / 12)}%`, top: landmine.y }}
             >
               지뢰
             </div>
           ))}
         </main>
-    
+
         {/* 하단 영역 */}
         <footer className="game-footer">
           <div className="foundation">
