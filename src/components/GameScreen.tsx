@@ -50,13 +50,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
     setInputValue,
     submitInputValue,
     hideQuitModal,
-    clearedWordsCount,
   } = useGameStore();
 
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
-  const { isScoreSubmitSuccess, stageSettings } = useGameEffects(gameAreaRef, profile, onGoToMain);
+  const { isScoreSubmitSuccess } = useGameEffects(gameAreaRef, profile, onGoToMain);
 
   useEffect(() => {
     // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
@@ -134,9 +133,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
             <div className="hud-item-left">단계: {stage}</div>
             <div className="hud-item-center">점수: {score.toLocaleString('en-US')}</div>
             <div className="hud-item-right">시간: {formattedTotalPlayTime}</div>
-          </div>
-          <div className="hud-container" style={{ marginTop: '5px', fontSize: '14px', color: '#ff0' }}>
-            목표: {clearedWordsCount} / {(stageSettings as any)?.clear_word_count ?? 20}
           </div>
 
           {/* 떨어지는 단어들 */}
