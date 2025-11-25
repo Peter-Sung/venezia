@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useGameStore, formatTime } from '../store/gameStore';
-import { fetchWordsForStage, fetchStageSettings, updateHighScore } from '../lib/queries';
+import { fetchWordsForStage, fetchStageSettings, updateHighScore, logGameResult, fetchRankings } from '../lib/queries';
 
 const GAME_LOOP_INTERVAL = 50; // ms
 
@@ -12,11 +12,12 @@ const GAME_LOOP_INTERVAL = 50; // ms
  */
 export const useGameEffects = (
   gameAreaRef: React.RefObject<HTMLDivElement>,
-  profile: { nickname: string },
+  profile: { id: string; nickname: string },
   onGoToMain: () => void,
 ) => {
   const queryClient = useQueryClient();
   const store = useGameStore();
+  const [isNewRecord, setIsNewRecord] = useState(false);
 
   // 굼벵이 바이러스를 위해 1단계 설정값을 미리 가져와 캐시해 둡니다.
   const { data: stage1Settings } = useQuery({
@@ -50,8 +51,23 @@ export const useGameEffects = (
   }, [wordListData, store.setWordList]);
 
   const { mutate: submitScore, isSuccess: isScoreSubmitSuccess } = useMutation({
-    mutationFn: updateHighScore,
-    onSuccess: () => {
+    mutationFn: async ({ nickname, play_at, score, playerId }: { nickname: string; play_at: string; score: number; playerId: string }) => {
+      // 1. 현재 최고 기록 조회
+      const { myBest } = await fetchRankings(nickname);
+      const previousBest = myBest?.score || 0;
+      const isRecord = score > previousBest;
+
+      // 2. 게임 결과 로그 저장 (모든 게임)
+      await logGameResult({ playerId, score, playAt: play_at });
+
+      // 3. 최고 점수 업데이트 (기존보다 높을 때만 DB 업데이트되지만, RPC가 알아서 처리함)
+      // 다만 여기서는 'New Record' 배지를 위해 우리가 직접 비교했습니다.
+      await updateHighScore({ nickname, play_at, score });
+
+      return isRecord;
+    },
+    onSuccess: (isRecord) => {
+      setIsNewRecord(isRecord);
       queryClient.invalidateQueries({ queryKey: ['rankings'] });
     },
   });
@@ -164,14 +180,17 @@ export const useGameEffects = (
         nickname: profile.nickname,
         play_at: formatTime(store.totalPlayTime),
         score: store.score,
+        playerId: profile.id,
       });
     }
-  }, [store.gameStatus, profile.nickname, store.totalPlayTime, store.score, submitScore]);
+  }, [store.gameStatus, profile.nickname, profile.id, store.totalPlayTime, store.score, submitScore]);
 
 
   return {
     isLoading: isLoadingSettings || isLoadingWords,
     isScoreSubmitSuccess,
+    isNewRecord,
     stageSettings,
   };
 };
+

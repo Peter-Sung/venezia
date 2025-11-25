@@ -55,7 +55,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
-  const { isScoreSubmitSuccess } = useGameEffects(gameAreaRef, profile, onGoToMain);
+  const { isScoreSubmitSuccess, isNewRecord } = useGameEffects(gameAreaRef, profile, onGoToMain);
 
   useEffect(() => {
     // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
@@ -70,7 +70,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   };
 
   if (gameStatus === 'gameOver') {
-    return <GameOverModal nickname={profile.nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} />;
+    return <GameOverModal nickname={profile.nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
   }
 
   // 12개의 기회 블록 렌더링

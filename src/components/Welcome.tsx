@@ -19,8 +19,8 @@ const decodeJwt = (token: string): any | null => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);
   } catch (e) {
@@ -29,11 +29,14 @@ const decodeJwt = (token: string): any | null => {
 };
 
 
+import RankingModal from './RankingModal';
+
 const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
   const [token, setToken] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoginView, setIsLoginView] = useState(true);
+  const [showRankingModal, setShowRankingModal] = useState(false);
 
   // Form states
   const [nickname, setNickname] = useState('');
@@ -261,14 +264,14 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
         <div className="retro-titlebar" style={{ justifyContent: 'center' }}>★☆★    베네치아    ★☆★</div>
         <div className="retro-window__body p-lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)', fontSize: '18px' }}>
           {profile ? renderLoggedInView() : (isLoginView ? renderLoginForm() : renderSignUpForm())}
-          
+
           <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--spacing-md)', paddingTop: 'var(--spacing-sm)', borderTop: '1px solid var(--color-border-dark)', marginTop: 'var(--spacing-sm)' }}>
             {profile && (
               <button onClick={handleGameStart} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
                 게임하기
               </button>
             )}
-            <button onClick={() => alert('열심히 만들고 있어요!')} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
+            <button onClick={() => setShowRankingModal(true)} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
               랭킹조회
             </button>
             {profile && (
@@ -282,6 +285,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
       <div className="welcome-footer">
         © 2025 Venezia: Finger Stretching (by Peter Labs). All rights reserved.
       </div>
+      {showRankingModal && <RankingModal onClose={() => setShowRankingModal(false)} />}
     </div>
   );
 };

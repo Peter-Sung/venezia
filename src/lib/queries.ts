@@ -167,3 +167,31 @@ export const deleteWord = async (id: bigint) => {
   return null;
 };
 
+
+export const logGameResult = async ({ playerId, score, playAt }: { playerId: string; score: number; playAt: string }) => {
+  const { error } = await supabase.rpc('log_game_result', {
+    p_player_id: playerId,
+    p_score: score,
+    p_play_at: playAt,
+  });
+
+  if (error) {
+    console.error('Error logging game result:', error);
+    throw new Error(error.message);
+  }
+
+  return null;
+};
+
+export const fetchRankingsByPeriod = async (period: 'weekly' | 'monthly' | 'all_time') => {
+  const { data, error } = await supabase.rpc('get_rankings_by_period', {
+    p_period: period,
+  });
+
+  if (error) {
+    console.error('Error fetching rankings by period:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};

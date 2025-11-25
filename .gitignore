@@ -130,3 +130,6 @@ playwright.config.ts
 !*.example.db
 supabase/migrations/
 supabase/tests/
+
+# Agent artifacts
+gemini.md
