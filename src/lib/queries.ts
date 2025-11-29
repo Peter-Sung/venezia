@@ -195,3 +195,28 @@ export const fetchRankingsByPeriod = async (period: 'weekly' | 'monthly' | 'all_
 
   return data;
 };
+
+
+export const fetchUserRank = async (period: string, playerId: number) => {
+  const { data, error } = await supabase
+    .rpc('get_user_rank', { p_period: period, p_player_id: playerId });
+
+  if (error) {
+    console.error('Error fetching user rank:', error);
+    throw error;
+  }
+
+  return data[0]; // Returns { rank, nickname, score, played_at } or undefined
+};
+
+export const fetchScoreRank = async (period: string, score: number) => {
+  const { data, error } = await supabase
+    .rpc('get_score_rank', { p_period: period, p_score: score });
+
+  if (error) {
+    console.error('Error fetching score rank:', error);
+    return null; // Return null instead of throwing to prevent UI blocking
+  }
+
+  return data; // Returns rank (number)
+};

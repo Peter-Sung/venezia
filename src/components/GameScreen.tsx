@@ -70,7 +70,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   };
 
   if (gameStatus === 'gameOver') {
-    return <GameOverModal nickname={profile.nickname} score={score} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
+    return <GameOverModal nickname={profile.nickname} score={score} playerId={parseInt(profile.id)} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
   }
 
   // 12개의 기회 블록 렌더링
