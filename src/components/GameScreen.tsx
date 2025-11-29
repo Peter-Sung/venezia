@@ -5,14 +5,10 @@ import { VirusType } from '../domains/types';
 import GameOverModal from './GameOverModal';
 import StageClearModal from './StageClearModal';
 import PauseGameModal from './PauseGameModal';
-
-interface Profile {
-  id: string;
-  nickname: string;
-}
+import { GameSession } from '../domains/game/session';
 
 interface GameScreenProps {
-  profile: Profile;
+  session: GameSession;
   onGoToMain: () => void;
   onRestart: () => void;
 }
@@ -32,7 +28,7 @@ const VIRUS_KOREAN_NAMES: Record<VirusType, string> = {
 // 5초 지속시간을 갖는 바이러스 목록
 const TIMED_VIRUSES: VirusType[] = ['stun', 'swift', 'sloth', 'hide-and-seek'];
 
-const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart }) => {
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,7 +51,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
-  const { isScoreSubmitSuccess, isNewRecord } = useGameEffects(gameAreaRef, profile, onGoToMain);
+  const { isScoreSubmitSuccess, isNewRecord } = useGameEffects(gameAreaRef, session, onGoToMain);
 
   useEffect(() => {
     // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
@@ -70,7 +66,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
   };
 
   if (gameStatus === 'gameOver') {
-    return <GameOverModal nickname={profile.nickname} score={score} playerId={parseInt(profile.id)} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
+    return <GameOverModal nickname={session.nickname} score={score} playerId={session.playerId ? parseInt(session.playerId) : undefined} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
   }
 
   // 12개의 기회 블록 렌더링
@@ -107,7 +103,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ profile, onGoToMain, onRestart 
         <div style={{ flex: 1, textAlign: 'center' }}>
           <span style={{ fontSize: '26px' }}>
             (Typer :{' '}
-            <span style={{ color: 'var(--color-secondary-yellow)' }}>{profile.nickname}</span>
+            <span style={{ color: 'var(--color-secondary-yellow)' }}>{session.nickname}</span>
             {' '}님)
           </span>
         </div>

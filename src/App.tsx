@@ -7,6 +7,7 @@ import AdminLayout from './admin/AdminLayout';
 import { useScreenSize } from './hooks/useScreenSize'; // 화면 크기 훅 임포트
 import UnsupportedDevice from './components/UnsupportedDevice'; // 안내 컴포넌트 임포트
 import { useGameStore } from './store/gameStore';
+import { GameSession } from './domains/game/session';
 
 const queryClient = new QueryClient();
 
@@ -44,27 +45,32 @@ interface Profile {
 // 게임 관련 라우팅을 처리하는 내부 컴포넌트
 const Game: React.FC = () => {
   const [gameKey, setGameKey] = React.useState(0);
-  // profile은 게임 세션 전체에서 사용되지만, 순수 게임 상태는 아니므로 여기서 관리
-  const [profile, setProfile] = React.useState<Profile | null>(null);
+  const [session, setSession] = React.useState<GameSession | null>(null);
 
   // Zustand 스토어에서 게임 상태와 액션을 가져옵니다.
-  const { gameStatus, startGame, setGameStatus, wordList } = useGameStore();
+  const { gameStatus, startGame, setGameStatus } = useGameStore();
 
   const handleStartGame = (profile: Profile, stage: number) => {
-    setProfile(profile);
-    // TODO: wordList를 여기서 fetch하고 startGame에 넘겨줘야 함.
-    // 우선 빈 배열로 시작합니다. useGameEffects에서 로드할 것입니다.
+    // Create a session from the profile
+    // In the future, this can be created for guests too
+    const newSession: GameSession = {
+      playerId: profile.id,
+      nickname: profile.nickname,
+      isGuest: false,
+    };
+    setSession(newSession);
+
     startGame(stage, []);
     setGameKey(prev => prev + 1); // 새 게임 시작 시 키 변경
   };
 
   const goToMain = () => {
     setGameStatus('welcome');
-    setProfile(null);
+    setSession(null);
   };
 
   const restartGame = () => {
-    if (profile) {
+    if (session) {
       // 1단계부터 다시 시작
       startGame(1, []);
       setGameKey(prev => prev + 1);
@@ -75,15 +81,14 @@ const Game: React.FC = () => {
     return <Welcome onGameStart={handleStartGame} />;
   }
 
-  if (!profile) {
-    // playing 상태인데 프로필이 없으면 다시 welcome으로 보냅니다.
+  if (!session) {
+    // playing 상태인데 세션이 없으면 다시 welcome으로 보냅니다.
     setGameStatus('welcome');
     return <Welcome onGameStart={handleStartGame} />;
   }
 
   // GameScreen은 게임 상태가 'playing', 'stageClear', 'gameOver'일 때 렌더링됩니다.
-  // startStage prop은 이제 store에서 관리되므로 필요 없습니다.
-  return <GameScreen key={gameKey} profile={profile} onGoToMain={goToMain} onRestart={restartGame} />;
+  return <GameScreen key={gameKey} session={session} onGoToMain={goToMain} onRestart={restartGame} />;
 };
 
 export default App;

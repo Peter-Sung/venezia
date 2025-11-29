@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { Word, Landmine, VirusType, VIRUS_TYPES } from '../domains/types';
-import { calculateKeystrokes } from '../domains/ime';
+import { calculateScore } from '../domains/game/scoring';
+import { getVirusDuration } from '../domains/game/virus';
+import { moveWords, spawnWords } from '../domains/game/words';
 
 // 게임의 다양한 상태를 정의합니다.
 type GameStatus = 'welcome' | 'playing' | 'stageClear' | 'gameOver';
@@ -141,43 +143,27 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   moveWords: (pixelIncrement, gameAreaHeight) => {
     const { words, landmines, stage } = get();
-    const WORD_HEIGHT = 30;
-    const LANDMINE_HEIGHT = 20;
 
-    let fallenCount = 0;
-    const collidedWordIds = new Set<number>();
-    const collidedLandmineIds = new Set<number>();
+    const result = moveWords(words, landmines, pixelIncrement, gameAreaHeight);
 
-    const nextWords = words.map(word => {
-      const newWord = { ...word, y: word.y + pixelIncrement };
-      for (const landmine of landmines) {
-        if (newWord.x === landmine.x) {
-          const wordBottom = newWord.y + WORD_HEIGHT;
-          const landmineTop = landmine.y;
-          const landmineBottom = landmine.y + LANDMINE_HEIGHT;
-          if (wordBottom >= landmineTop && newWord.y <= landmineBottom) {
-            collidedWordIds.add(newWord.id);
-            collidedLandmineIds.add(landmine.id);
-            get().addScore(calculateKeystrokes(newWord.text) * stage * 10);
-          }
+    if (result.collidedWordIds.size > 0) {
+      let scoreToAdd = 0;
+      // We need to find the words that collided to calculate score.
+      // Since moveWords returns survivingWords, the collided ones are filtered out.
+      // We iterate over the *original* words to find the collided ones.
+      words.forEach(w => {
+        if (result.collidedWordIds.has(w.id)) {
+          scoreToAdd += calculateScore(w.text, stage);
         }
-      }
-      return newWord;
-    });
+      });
 
-    const survivingWords = nextWords.filter(word => {
-      if (collidedWordIds.has(word.id)) return false;
-      if (word.y > gameAreaHeight) {
-        if (!word.isSpecial) fallenCount++;
-        return false;
-      }
-      return true;
-    });
+      if (scoreToAdd > 0) get().addScore(scoreToAdd);
+    }
 
-    if (fallenCount > 0) get().decreaseRemainingBlocks(fallenCount);
+    if (result.fallenCount > 0) get().decreaseRemainingBlocks(result.fallenCount);
 
-    const remainingLandmines = landmines.filter(l => !collidedLandmineIds.has(l.id));
-    set({ words: survivingWords, landmines: remainingLandmines });
+    const remainingLandmines = landmines.filter(l => !result.collidedLandmineIds.has(l.id));
+    set({ words: result.survivingWords, landmines: remainingLandmines });
   },
 
   addLandmine: (x, y) => {
@@ -189,39 +175,22 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   spawnWords: (count) => {
     const { words, wordIdCounter, wordList, activeVirus } = get();
-    if (!wordList || wordList.length === 0) return;
-
-    const newWords: Word[] = [];
-    const wordsNearTop = words.filter(w => w.y < 100);
-    const occupiedColumns = new Set(wordsNearTop.map(w => w.x));
-    const availableColumns = Array.from({ length: 12 }, (_, i) => i).filter(
-      col => !occupiedColumns.has(col)
-    );
-
-    for (let i = availableColumns.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [availableColumns[i], availableColumns[j]] = [availableColumns[j], availableColumns[i]];
-    }
-
-    const spawnCount = Math.min(count, availableColumns.length);
-    let currentWordId = wordIdCounter;
-
-    const hasSpecialWord = words.some(word => word.isSpecial);
     const TIMED_VIRUSES: VirusType[] = ['stun', 'swift', 'sloth', 'hide-and-seek'];
     const isTimedVirusActive = TIMED_VIRUSES.includes(activeVirus.type as VirusType);
+    const hasSpecialWord = words.some(word => word.isSpecial);
 
-    for (let i = 0; i < spawnCount; i++) {
-      const randomText = wordList[Math.floor(Math.random() * wordList.length)];
-      const isSpecial = !hasSpecialWord && !isTimedVirusActive && Math.random() < 0.15;
-      newWords.push({
-        id: currentWordId++,
-        text: randomText,
-        x: availableColumns[i],
-        y: 0,
-        isSpecial: isSpecial,
-      });
+    const { newWords, nextId } = spawnWords(
+      words,
+      wordList,
+      wordIdCounter,
+      count,
+      hasSpecialWord,
+      isTimedVirusActive
+    );
+
+    if (newWords.length > 0) {
+      set({ words: [...words, ...newWords], wordIdCounter: nextId });
     }
-    set({ words: [...words, ...newWords], wordIdCounter: currentWordId });
   },
 
   toggleWordsVisibility: (shouldHide) => {
@@ -231,30 +200,18 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
   },
 
   activateVirus: (virus, specialWord) => {
-    let duration = 0;
-    switch (virus) {
-      case 'annihilator':
-      case 'reconstruction':
-      case 'gang':
-        duration = 3;
-        break;
-      case 'landmine':
-        if (specialWord) get().addLandmine(specialWord.x, specialWord.y);
-        duration = 3;
-        break;
-      case 'stun':
-      case 'swift':
-      case 'sloth':
-      case 'hide-and-seek':
-        duration = 5;
-        break;
-    }
+    const duration = getVirusDuration(virus);
+
     set({ activeVirus: { type: virus, duration } });
 
     if (virus === 'reconstruction') get().resetRemainingBlocks();
     if (virus === 'annihilator') get().clearWords();
     if (virus === 'gang') get().spawnWords(5);
     if (virus === 'hide-and-seek') get().toggleWordsVisibility(true);
+
+    if (virus === 'landmine' && specialWord) {
+      get().addLandmine(specialWord.x, specialWord.y);
+    }
   },
 
   decrementVirusDuration: () => {
@@ -288,20 +245,15 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     if (removed.length > 0) {
       set({ words: remaining });
-      get().addScore(removed.length * calculateKeystrokes(trimmedInput) * stage * 10);
+
+      const scoreToAdd = removed.reduce((acc, word) => acc + calculateScore(word.text, stage), 0);
+      get().addScore(scoreToAdd);
 
       const specialWord = removed.find(w => w.isSpecial);
       if (specialWord) {
         const virus = VIRUS_TYPES[Math.floor(Math.random() * VIRUS_TYPES.length)];
         activateVirus(virus, specialWord);
       } else {
-        // Only increment count if it's NOT a special word
-        // Also check if it was hidden? The requirement says "black words".
-        // Special words are usually colored. Normal words are black.
-        // If a word is hidden, it might be revealed and then typed?
-        // Requirement: "1. Yellow words (special) -> Exclude", "2. Virus removed -> Exclude", "3. Landmine -> Exclude"
-        // This function is for TYPING. So 2 and 3 are handled elsewhere (or not counted).
-        // We just need to exclude special words here.
         set(state => ({ clearedWordsCount: state.clearedWordsCount + 1 }));
       }
 
