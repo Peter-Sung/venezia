@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RankingBoard from './RankingBoard';
 import GuestSignupModal from './GuestSignupModal';
 import { GameSession } from '../domains/game/session';
-import { fetchScoreRank } from '../lib/queries';
+import { fetchScoreRank, getPlayerProfile } from '../lib/queries';
 
 interface GameOverModalProps {
   nickname: string;
@@ -31,21 +31,34 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 }) => {
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [virtualRank, setVirtualRank] = useState<number | null>(null);
+  const [totalDrops, setTotalDrops] = useState<number | null>(null);
+
+  const earnedDrops = Math.floor((score / 1000) * 10) / 10;
 
   useEffect(() => {
     if (isGuest && score > 0) {
       fetchScoreRank('all_time', score).then(rank => {
         setVirtualRank(rank);
       });
+    } else if (!isGuest && playerId && isScoreSubmitSuccess) {
+      // Fetch profile only after score submission is successful to ensure DB is updated
+      // Add a small delay to ensure DB update propagation (even with RPC, just to be safe)
+      const timer = setTimeout(() => {
+        getPlayerProfile(playerId.toString()).then(profile => {
+          if (profile) {
+            setTotalDrops(profile.drop_point);
+          }
+        });
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [isGuest, score]);
+  }, [isGuest, score, playerId, isScoreSubmitSuccess]);
 
   const handleSignupSuccess = (newSession: GameSession) => {
     setShowSignupModal(false);
     if (onSessionUpdate) {
       onSessionUpdate(newSession);
     }
-    // Session updated, now we are a user. The modal will re-render as user (isGuest=false).
   };
 
   return (
@@ -92,11 +105,22 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <RankingBoard
-                  myPlayerId={playerId}
-                  currentScore={score}
-                  myNickname={nickname}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <RankingBoard
+                    myPlayerId={playerId}
+                    currentScore={score}
+                    myNickname={nickname}
+                    isNewRecord={isNewRecord}
+                  />
+                  <div style={{ marginTop: '10px', padding: '10px 15px', backgroundColor: '#f0f8ff', borderRadius: '5px', border: '1px solid #add8e6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '16px' }}>
+                    <span style={{ color: '#000' }}>
+                      획득한 DR: <span style={{ color: 'blue' }}>+{earnedDrops} DR</span>
+                    </span>
+                    <span style={{ color: '#000' }}>
+                      총 보유 DR: <span style={{ color: 'red' }}>{totalDrops !== null ? totalDrops.toLocaleString() : '...'} DR</span>
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
 

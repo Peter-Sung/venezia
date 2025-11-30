@@ -1,12 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { getPlayerProfile } from '../lib/queries';
 import '../tokens.css';
+import RankingModal from './RankingModal';
 
 // JWT payload에서 추출할 프로필 정보 타입
 interface Profile {
   id: string;
   nickname: string;
+  drop_point?: number;
 }
 
 // 부모 컴포넌트로 전달할 props 타입
@@ -27,9 +29,6 @@ const decodeJwt = (token: string): any | null => {
     return null;
   }
 };
-
-
-import RankingModal from './RankingModal';
 
 const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
   const [token, setToken] = useState<string | null>(null);
@@ -56,7 +55,21 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
       const decoded = decodeJwt(storedToken);
       if (decoded && decoded.exp * 1000 > Date.now()) {
         setToken(storedToken);
-        setProfile({ id: decoded.sub, nickname: decoded.nickname });
+        // Fetch full profile including drop_point
+        getPlayerProfile(decoded.sub).then(profileData => {
+          if (profileData) {
+            setProfile({
+              id: decoded.sub,
+              nickname: decoded.nickname,
+              drop_point: profileData.drop_point
+            });
+          } else {
+            setProfile({ id: decoded.sub, nickname: decoded.nickname });
+          }
+        }).catch(err => {
+          console.error("Failed to fetch profile:", err);
+          setProfile({ id: decoded.sub, nickname: decoded.nickname });
+        });
       } else {
         localStorage.removeItem('venezia_token');
       }
@@ -154,7 +167,20 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
 
     localStorage.setItem('venezia_token', newToken);
     setToken(newToken);
-    setProfile({ id: decoded.sub, nickname: decoded.nickname });
+
+    // Fetch full profile
+    try {
+      const profileData = await getPlayerProfile(decoded.sub);
+      setProfile({
+        id: decoded.sub,
+        nickname: decoded.nickname,
+        drop_point: profileData?.drop_point
+      });
+    } catch (err) {
+      console.error("Failed to fetch profile after login:", err);
+      setProfile({ id: decoded.sub, nickname: decoded.nickname });
+    }
+
     setIsSubmitting(false);
   };
 
@@ -309,6 +335,11 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
       <p style={{ margin: '0', textAlign: 'center', fontSize: '18px' }}>
         환영합니다. <span style={{ color: 'red', fontWeight: 'normal' }}>{profile?.nickname}</span> 님!
       </p>
+      {profile?.drop_point !== undefined && (
+        <p style={{ margin: '0', textAlign: 'center', fontSize: '16px', color: 'blue' }}>
+          보유 드롭: {profile.drop_point.toLocaleString()} DR
+        </p>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
         <label htmlFor="stage-select" style={{ minWidth: '80px' }}>단계선택:</label>
         <select id="stage-select" value={selectedStage} onChange={(e) => setSelectedStage(Number(e.target.value))} className="retro-input bevel-inset" style={{ flex: 1 }}>
@@ -340,9 +371,11 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
             <button onClick={() => setShowRankingModal(true)} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
               랭킹조회
             </button>
-            <button onClick={() => window.open('https://csezzang.notion.site/Peter-Labs-2886569af4b5801d8e0ae7265189d0ed', '_blank')} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
-              게임소개
-            </button>
+            {!profile && (
+              <button onClick={() => window.open('https://csezzang.notion.site/Peter-Labs-2886569af4b5801d8e0ae7265189d0ed', '_blank')} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
+                게임소개
+              </button>
+            )}
             {profile && (
               <button onClick={handleLogout} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
                 로그아웃

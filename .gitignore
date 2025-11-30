@@ -128,7 +128,7 @@ playwright.config.ts
 /supabase/.temp/
 *.db
 !*.example.db
-supabase/migrations/
+
 supabase/tests/
 
 # Agent artifacts

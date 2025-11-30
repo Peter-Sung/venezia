@@ -53,7 +53,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임 효과 훅 사용 (소리, 진동 등)
-  useGameEffects(gameAreaRef, session, onGoToMain);
+  const { isNewRecord } = useGameEffects(gameAreaRef, session, onGoToMain);
 
   // 입력창 포커스 유지
   useEffect(() => {
@@ -119,6 +119,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
             onRestart={onRestart}
             onGoToMain={onGoToMain}
             isScoreSubmitSuccess={true} // TODO: 실제 상태 연동 필요
+            isNewRecord={isNewRecord}
             isGuest={session.isGuest}
             onSessionUpdate={onSessionUpdate}
           />

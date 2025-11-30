@@ -17,20 +17,25 @@ export const fetchWordsForStage = async (stage: number) => {
   return data.map(item => item.text);
 };
 
-export const getPlayerProfile = async () => {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) {
-    console.error('Error getting session:', sessionError);
-    throw new Error(sessionError.message);
-  }
-  if (!sessionData.session) {
-    return null;
+export const getPlayerProfile = async (userId?: string) => {
+  let targetId = userId;
+
+  if (!targetId) {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('Error getting session:', sessionError);
+      throw new Error(sessionError.message);
+    }
+    if (!sessionData.session) {
+      return null;
+    }
+    targetId = sessionData.session.user.id;
   }
 
   const { data, error } = await supabase
     .from('players')
-    .select('id, nickname, level, cumulative_points')
-    .eq('id', sessionData.session.user.id)
+    .select('id, nickname, level, cumulative_points, drop_point')
+    .eq('id', targetId)
     .single();
 
   if (error) {
@@ -39,6 +44,28 @@ export const getPlayerProfile = async () => {
   }
 
   return data;
+};
+
+// ... (other functions)
+
+export const logGameResult = async ({ playerId, score, playAt }: { playerId: string; score: number; playAt: string }) => {
+  // 1. Calculate Drop (Mileage)
+  // 1000 Score = 1 DR, rounded to 1 decimal place
+  const earnedDrop = Math.floor((score / 1000) * 10) / 10;
+
+  // 2. Log Game Result (RPC)
+  const { data: newDropPoint, error: logError } = await supabase.rpc('log_game_result', {
+    p_player_id: playerId,
+    p_score: score,
+    p_play_at: playAt,
+  });
+
+  if (logError) {
+    console.error('Error logging game result:', logError);
+    throw new Error(logError.message);
+  }
+
+  return newDropPoint;
 };
 
 export const fetchStageSettings = async (stage: number) => {
@@ -168,20 +195,7 @@ export const deleteWord = async (id: bigint) => {
 };
 
 
-export const logGameResult = async ({ playerId, score, playAt }: { playerId: string; score: number; playAt: string }) => {
-  const { error } = await supabase.rpc('log_game_result', {
-    p_player_id: playerId,
-    p_score: score,
-    p_play_at: playAt,
-  });
 
-  if (error) {
-    console.error('Error logging game result:', error);
-    throw new Error(error.message);
-  }
-
-  return null;
-};
 
 export const fetchRankingsByPeriod = async (period: 'weekly' | 'monthly' | 'all_time') => {
   const { data, error } = await supabase.rpc('get_rankings_by_period', {

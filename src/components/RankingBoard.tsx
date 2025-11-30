@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRankingsByPeriod, fetchUserRank, fetchScoreRank } from '../lib/queries';
 
@@ -8,9 +8,10 @@ interface RankingBoardProps {
     myPlayerId?: number;
     currentScore?: number;
     myNickname?: string;
+    isNewRecord?: boolean;
 }
 
-const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, myNickname }) => {
+const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, myNickname, isNewRecord }) => {
     const [activeTab, setActiveTab] = useState<Period>('weekly');
 
     const { data: rankings, isLoading, error } = useQuery({
@@ -39,9 +40,63 @@ const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, m
     const renderRankings = () => {
         if (isLoading || isScoreRankLoading) return <div style={{ textAlign: 'center', padding: '20px' }}>로딩 중...</div>;
         if (error) return <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>랭킹을 불러오는데 실패했습니다.</div>;
-        if (!rankings || rankings.length === 0) return <div style={{ textAlign: 'center', padding: '20px' }}>랭킹 데이터가 없습니다.</div>;
 
-        // Helper to format date as YYYY/MM/DD
+        // Determine if we are in "Game Over" mode
+        const isGameOverMode = currentScore !== undefined;
+
+        // Base rankings from DB (Top 10 unique users by best score)
+        let displayRankings = rankings ? [...rankings] : [];
+        let isCurrentInTop10 = false;
+
+        // Logic:
+        // 1. If isNewRecord: Update Top 10 with new score.
+        // 2. If !isNewRecord: Keep Top 10 as is (showing old best).
+
+        if (isGameOverMode && currentScore !== undefined && isNewRecord) {
+            // 1. Remove the user's existing entry from the list (if any)
+            const filteredRankings = displayRankings.filter((r: any) => r.nickname !== myNickname);
+
+            // 2. Add the current score entry
+            const currentScoreEntry = {
+                nickname: myNickname,
+                score: currentScore,
+                played_at: new Date().toISOString(),
+                isCurrent: true
+            };
+            filteredRankings.push(currentScoreEntry);
+
+            // 3. Sort by score descending
+            filteredRankings.sort((a: any, b: any) => b.score - a.score);
+
+            // 4. Assign ranks
+            const rankedList = filteredRankings.map((item: any, index: number) => ({
+                ...item,
+                rank: index + 1
+            }));
+
+            // 5. Check if current score is in Top 10
+            const top10Virtual = rankedList.slice(0, 10);
+            const foundInTop10 = top10Virtual.find((r: any) => r.isCurrent);
+
+            if (foundInTop10) {
+                displayRankings = top10Virtual;
+                isCurrentInTop10 = true;
+            } else {
+                // If new record but not in Top 10, we revert to original list (or sorted original)
+                displayRankings = rankings ? rankings.map((item: any, index: number) => ({ ...item, rank: index + 1 })) : [];
+                isCurrentInTop10 = false;
+            }
+        } else {
+            // Not a new record (or not game over mode)
+            // Just show DB rankings
+            displayRankings = displayRankings.map((item: any, index: number) => ({
+                ...item,
+                rank: index + 1
+            }));
+        }
+
+        if (!rankings || rankings.length === 0 && !isGameOverMode) return <div style={{ textAlign: 'center', padding: '20px' }}>랭킹 데이터가 없습니다.</div>;
+
         const formatDate = (dateString: string) => {
             const date = new Date(dateString);
             const year = date.getFullYear();
@@ -49,19 +104,6 @@ const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, m
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}/${month}/${day}`;
         };
-
-        // Determine if we are in "Game Over" mode (currentScore provided) or "View Ranking" mode
-        const isGameOverMode = currentScore !== undefined;
-
-        // Check if current score is in Top 10 (only for Game Over mode)
-        // We match by score and nickname.
-        const currentScoreInTop10Index = isGameOverMode && rankings
-            ? rankings.findIndex((r: any) => r.score === currentScore && r.nickname === myNickname)
-            : -1;
-        const isCurrentScoreInTop10 = currentScoreInTop10Index !== -1;
-
-        // Check if "My Best" is in Top 10 (for View Ranking mode)
-        const isMyBestInTop10 = !isGameOverMode && myRankData && myRankData.rank <= 10;
 
         const columnWidths = {
             rank: '15%',
@@ -82,30 +124,22 @@ const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, m
                         </tr>
                     </thead>
                     <tbody>
-                        {rankings.map((rank: any, index: number) => {
-                            // Highlight logic:
-                            // If Game Over mode: Highlight if this row is the current score.
-                            // If View Ranking mode: Highlight if this row is my best score (optional, but good UX).
-
-                            let isHighlight = false;
-                            if (isGameOverMode) {
-                                isHighlight = index === currentScoreInTop10Index;
-                            } else {
-                                // For View Ranking, we can try to match nickname if we don't have ID in list
-                                isHighlight = rank.nickname === myNickname;
-                            }
+                        {displayRankings.map((rank: any, index: number) => {
+                            const isCurrent = rank.isCurrent;
+                            const isMyBest = !isGameOverMode && rank.nickname === myNickname;
 
                             return (
-                                <tr key={`${rank.nickname}-${index}`} style={{ borderBottom: '1px solid #ddd' }}>
-                                    <td style={{ padding: '8px', textAlign: 'center', width: columnWidths.rank }}>{index + 1}</td>
+                                <tr key={`${rank.nickname}-${index}-${isCurrent ? 'now' : 'hist'}`} style={{ borderBottom: '1px solid #ddd' }}>
+                                    <td style={{ padding: '8px', textAlign: 'center', width: columnWidths.rank }}>{rank.rank}</td>
                                     <td style={{ padding: '8px', textAlign: 'left', width: columnWidths.nickname, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        <span style={{ color: isHighlight ? 'blue' : 'inherit' }}>
+                                        <span style={{ color: isCurrent ? 'blue' : 'inherit' }}>
                                             {rank.nickname}
-                                            {isHighlight && <span style={{ color: 'red', marginLeft: '4px' }}>(Now)</span>}
+                                            {isCurrent && <span style={{ color: 'red', marginLeft: '4px' }}>(New Record)</span>}
+                                            {isMyBest && <span style={{ color: 'red', marginLeft: '4px' }}>(나)</span>}
                                         </span>
                                     </td>
                                     <td style={{ padding: '8px', textAlign: 'right', width: columnWidths.score }}>
-                                        <span style={{ color: isHighlight ? 'blue' : 'inherit' }}>{rank.score.toLocaleString()}</span>
+                                        <span style={{ color: isCurrent ? 'blue' : 'inherit' }}>{rank.score.toLocaleString()}</span>
                                     </td>
                                     <td style={{ padding: '8px', textAlign: 'right', fontSize: '0.9em', color: '#666', width: columnWidths.date }}>
                                         {formatDate(rank.played_at)}
@@ -116,9 +150,8 @@ const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, m
                     </tbody>
                 </table>
 
-                {/* Bottom Section Logic */}
-                {/* Case 1: Game Over Mode AND Current Score NOT in Top 10 -> Show Current Score */}
-                {isGameOverMode && !isCurrentScoreInTop10 && currentScoreRank && (
+                {/* Bottom Section: Show if Game Over AND (Not in Top 10 OR Not New Record) */}
+                {isGameOverMode && (!isCurrentInTop10 || !isNewRecord) && currentScoreRank && (
                     <div style={{ marginTop: '10px', borderTop: '2px solid #333', paddingTop: '10px' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                             <tbody>
@@ -139,8 +172,7 @@ const RankingBoard: React.FC<RankingBoardProps> = ({ myPlayerId, currentScore, m
                     </div>
                 )}
 
-                {/* Case 2: View Ranking Mode AND My Best NOT in Top 10 -> Show My Best Score */}
-                {!isGameOverMode && myPlayerId && myRankData && !isMyBestInTop10 && (
+                {!isGameOverMode && myPlayerId && myRankData && myRankData.rank > 10 && (
                     <div style={{ marginTop: '10px', borderTop: '2px solid #333', paddingTop: '10px' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                             <tbody>
