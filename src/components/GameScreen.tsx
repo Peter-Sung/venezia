@@ -11,6 +11,7 @@ interface GameScreenProps {
   session: GameSession;
   onGoToMain: () => void;
   onRestart: () => void;
+  onSessionUpdate?: (newSession: GameSession) => void;
 }
 
 // 바이러스 영문 타입 -> 한글 이름 변환 맵
@@ -28,7 +29,7 @@ const VIRUS_KOREAN_NAMES: Record<VirusType, string> = {
 // 5초 지속시간을 갖는 바이러스 목록
 const TIMED_VIRUSES: VirusType[] = ['stun', 'swift', 'sloth', 'hide-and-seek'];
 
-const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart, onSessionUpdate }) => {
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,6 +38,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart 
     words,
     inputValue,
     score,
+
     remainingBlocks,
     gameStatus,
     stage,
@@ -50,28 +52,23 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart 
 
   const formattedTotalPlayTime = useFormattedTime();
 
-  // 게임의 부수 효과(타이머, 데이터 페칭 등)를 관리하는 훅을 호출합니다.
-  const { isScoreSubmitSuccess, isNewRecord } = useGameEffects(gameAreaRef, session, onGoToMain);
+  // 게임 효과 훅 사용 (소리, 진동 등)
+  useGameEffects(gameAreaRef, session, onGoToMain);
 
+  // 입력창 포커스 유지
   useEffect(() => {
-    // 게임중이거나, 그만두기 팝업이 떠있을때는 입력창에 포커스를 주지 않습니다.
     if (gameStatus === 'playing' && !isQuitModalVisible) {
       inputRef.current?.focus();
     }
-  }, [gameStatus, isQuitModalVisible]);
+  }, [gameStatus, isQuitModalVisible, words]); // words가 바뀔 때마다 포커스 확인 (단어 입력 후)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     submitInputValue();
   };
 
-  if (gameStatus === 'gameOver') {
-    return <GameOverModal nickname={session.nickname} score={score} playerId={session.playerId ? parseInt(session.playerId) : undefined} onRestart={onRestart} onGoToMain={onGoToMain} isScoreSubmitSuccess={isScoreSubmitSuccess} isNewRecord={isNewRecord} />;
-  }
-
-  // 12개의 기회 블록 렌더링
-  const renderBlocks = (start: number, end: number) => {
-    return Array.from({ length: 12 }).slice(start, end).map((_, i) => (
+  const renderBlocks = (start: number, count: number) => {
+    return Array.from({ length: count }, (_, i) => (
       <div
         key={i + start}
         className="life-block"
@@ -114,6 +111,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart 
       <div className="retro-window__body" style={{ display: 'flex', flexDirection: 'column', padding: 0, flex: 1 }}>
         {isQuitModalVisible && <PauseGameModal onConfirm={onGoToMain} onCancel={hideQuitModal} />}
         {gameStatus === 'stageClear' && <StageClearModal stage={stage} />}
+        {gameStatus === 'gameOver' && (
+          <GameOverModal
+            nickname={session.nickname}
+            score={score}
+            playerId={session.playerId}
+            onRestart={onRestart}
+            onGoToMain={onGoToMain}
+            isScoreSubmitSuccess={true} // TODO: 실제 상태 연동 필요
+            isGuest={session.isGuest}
+            onSessionUpdate={onSessionUpdate}
+          />
+        )}
 
         <main
           ref={gameAreaRef}
@@ -175,7 +184,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart 
               />
             </form>
             <div className="blocks-container blocks-container--right">
-              {renderBlocks(6, 12)}
+              {renderBlocks(6, 6)}
             </div>
           </div>
           <div className="wave-container"></div>

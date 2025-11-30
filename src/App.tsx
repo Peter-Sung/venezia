@@ -50,14 +50,18 @@ const Game: React.FC = () => {
   // Zustand 스토어에서 게임 상태와 액션을 가져옵니다.
   const { gameStatus, startGame, setGameStatus } = useGameStore();
 
-  const handleStartGame = (profile: Profile, stage: number) => {
-    // Create a session from the profile
-    // In the future, this can be created for guests too
-    const newSession: GameSession = {
-      playerId: profile.id,
-      nickname: profile.nickname,
-      isGuest: false,
-    };
+  const handleStartGame = (profile: Profile | null, stage: number) => {
+    // Create a session from the profile or create a guest session
+    const newSession: GameSession = profile
+      ? {
+        playerId: profile.id,
+        nickname: profile.nickname,
+        isGuest: false,
+      }
+      : {
+        nickname: `게스트#${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        isGuest: true,
+      };
     setSession(newSession);
 
     startGame(stage, []);
@@ -87,8 +91,12 @@ const Game: React.FC = () => {
     return <Welcome onGameStart={handleStartGame} />;
   }
 
+  const handleSessionUpdate = (newSession: GameSession) => {
+    setSession(newSession);
+  };
+
   // GameScreen은 게임 상태가 'playing', 'stageClear', 'gameOver'일 때 렌더링됩니다.
-  return <GameScreen key={gameKey} session={session} onGoToMain={goToMain} onRestart={restartGame} />;
+  return <GameScreen key={gameKey} session={session} onGoToMain={goToMain} onRestart={restartGame} onSessionUpdate={handleSessionUpdate} />;
 };
 
 export default App;

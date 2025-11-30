@@ -36,7 +36,7 @@ export const useGameScore = (session: GameSession) => {
         if (store.gameStatus === 'gameOver') {      // 게임 결과 로깅 및 점수 제출
             // 게스트인 경우(playerId가 없는 경우)에는 점수 저장을 건너뛰거나 로컬에만 저장할 수 있음
             // 현재 요구사항은 "기존 동작 유지"이므로 playerId가 있을 때만 저장
-            if (session.playerId) {
+            if (session?.playerId) {
                 submitScore({
                     nickname: session.nickname,
                     play_at: formatTime(store.totalPlayTime),
@@ -45,7 +45,7 @@ export const useGameScore = (session: GameSession) => {
                 });
             }
         }
-    }, [store.gameStatus, session.nickname, session.playerId, store.totalPlayTime, store.score, submitScore]);
+    }, [store.gameStatus, session?.nickname, session?.playerId, store.totalPlayTime, store.score, submitScore]);
 
     return {
         isScoreSubmitSuccess: isScoreSubmitSuccess || (!session.playerId && store.gameStatus === 'gameOver'), // Guest always succeeds locally

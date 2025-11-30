@@ -11,7 +11,7 @@ interface Profile {
 
 // 부모 컴포넌트로 전달할 props 타입
 interface WelcomeProps {
-  onGameStart: (profile: Profile, stage: number) => void;
+  onGameStart: (profile: Profile | null, stage: number) => void;
 }
 
 // Base64 URL 디코딩을 포함한 간단한 JWT 디코더
@@ -37,6 +37,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
   const [loading, setLoading] = useState(true);
   const [isLoginView, setIsLoginView] = useState(true);
   const [showRankingModal, setShowRankingModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form states
   const [nickname, setNickname] = useState('');
@@ -194,7 +195,37 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
             <label htmlFor="password-input" style={{ minWidth: '110px' }}>비밀번호:</label>
-            <input id="password-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="retro-input bevel-inset" required disabled={isSubmitting} />
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+              <input
+                id="password-input"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="retro-input bevel-inset"
+                style={{ width: '100%', paddingRight: '35px' }}
+                required
+                disabled={isSubmitting}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '5px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
           </div>
         </div>
         <button type="submit" className="retro-button bevel-outset" style={{ flex: '0 0 auto', width: '83px', height: '83px' }} disabled={isSubmitting}>
@@ -204,6 +235,11 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
       <p style={{ textAlign: 'center', margin: '0', fontSize: '14px' }}>
         계정이 없으신가요? <button type="button" onClick={() => handleViewChange(false)} className="retro-button-inline bevel-outset" disabled={isSubmitting}>회원가입</button>
       </p>
+      <div style={{ borderTop: '1px solid var(--color-border-dark)', paddingTop: 'var(--spacing-md)', marginTop: 'var(--spacing-sm)', textAlign: 'center' }}>
+        <button type="button" onClick={() => onGameStart(null, 1)} className="retro-button bevel-outset" style={{ width: '100%', padding: '10px' }}>
+          체험하기 (게스트 모드)
+        </button>
+      </div>
     </form>
   );
 
@@ -225,7 +261,37 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
             <label htmlFor="password-signup" style={{ minWidth: '110px' }}>비밀번호:</label>
-            <input id="password-signup" type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} className="retro-input bevel-inset" required disabled={isSubmitting} />
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+              <input
+                id="password-signup"
+                type={showPassword ? "text" : "password"}
+                value={signupPassword}
+                onChange={(e) => setSignupPassword(e.target.value)}
+                className="retro-input bevel-inset"
+                style={{ width: '100%', paddingRight: '35px' }}
+                required
+                disabled={isSubmitting}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '5px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
           </div>
         </div>
         <button type="submit" className="retro-button bevel-outset" style={{ flex: '0 0 auto', width: '83px', height: '83px' }} disabled={isSubmitting}>
@@ -273,6 +339,9 @@ const Welcome: React.FC<WelcomeProps> = ({ onGameStart }) => {
             )}
             <button onClick={() => setShowRankingModal(true)} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
               랭킹조회
+            </button>
+            <button onClick={() => window.open('https://csezzang.notion.site/Peter-Labs-2886569af4b5801d8e0ae7265189d0ed', '_blank')} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
+              게임소개
             </button>
             {profile && (
               <button onClick={handleLogout} className="retro-button bevel-outset" style={{ minWidth: '120px' }}>
