@@ -6,6 +6,9 @@ export const getVirusDuration = (type: VirusType): number => {
         case 'reconstruction':
         case 'gang':
         case 'landmine':
+        case 'math':
+        case 'bomb':
+        case 'landmine-field':
             return 3;
         case 'stun':
         case 'swift':
@@ -27,6 +30,9 @@ export const getVirusKoreanName = (type: VirusType): string => {
         'hide-and-seek': '숨바꼭질 바이러스',
         gang: '패거리 바이러스',
         landmine: '지뢰 바이러스',
+        math: '정승제 바이러스',
+        bomb: '시한폭탄 바이러스',
+        'landmine-field': '지뢰밭 바이러스',
     };
     return names[type];
 };

@@ -24,6 +24,9 @@ const VIRUS_KOREAN_NAMES: Record<VirusType, string> = {
   'hide-and-seek': '숨바꼭질 바이러스',
   gang: '패거리 바이러스',
   landmine: '지뢰 바이러스',
+  math: '정승제 바이러스',
+  bomb: '시한폭탄 바이러스',
+  'landmine-field': '지뢰밭 바이러스',
 };
 
 // 5초 지속시간을 갖는 바이러스 목록
@@ -45,6 +48,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
     activeVirus,
     landmines,
     isQuitModalVisible,
+    clearedWordsCount, // Added for Debug UI
+    floatingScores,
     setInputValue,
     submitInputValue,
     hideQuitModal,
@@ -53,7 +58,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
   const formattedTotalPlayTime = useFormattedTime();
 
   // 게임 효과 훅 사용 (소리, 진동 등)
-  const { isNewRecord } = useGameEffects(gameAreaRef, session, onGoToMain);
+  const { isNewRecord, stageSettings } = useGameEffects(gameAreaRef, session, onGoToMain);
 
   // 입력창 포커스 유지
   useEffect(() => {
@@ -102,6 +107,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
             (Typer :{' '}
             <span style={{ color: 'var(--color-secondary-yellow)' }}>{session.nickname}</span>
             {' '}님)
+            {/* Debug UI: Word Count */}
+            <span style={{ fontSize: '16px', color: '#fff', marginLeft: '10px' }}>
+              [목표: {clearedWordsCount} / {stageSettings?.clear_word_count ?? 20}]
+            </span>
           </span>
         </div>
         <div style={{ flex: 1, textAlign: 'right' }}>
@@ -125,6 +134,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
           />
         )}
 
+        <style>
+          {`
+            @keyframes floatUp {
+              0% { transform: translateY(0); opacity: 1; }
+              100% { transform: translateY(-30px); opacity: 0; }
+            }
+          `}
+        </style>
         <main
           ref={gameAreaRef}
           className="game-area"
@@ -151,9 +168,48 @@ const GameScreen: React.FC<GameScreenProps> = ({ session, onGoToMain, onRestart,
                 style={{ left: `${word.x * (100 / 12)}%`, top: word.y }}
               >
                 {word.isHidden ? '????' : word.text}
+                {word.timer !== undefined && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-30px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    transform: 'translateX(-50%)',
+                    fontSize: '24px',
+                    color: 'var(--color-secondary-yellow)',
+                    fontWeight: 'normal',
+                    whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'var(--font-family-pixel)'
+                  }}>
+                    {(word.timer / 1000).toFixed(1)}s
+                  </div>
+                )}
               </div>
             )
           })}
+
+          {/* Floating Scores */}
+          {floatingScores.map(fs => (
+            <div
+              key={fs.id}
+              style={{
+                position: 'absolute',
+                left: `${fs.x * (100 / 12)}%`,
+                top: fs.y,
+                color: 'var(--color-secondary-yellow)',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                textShadow: '2px 2px 0 #000',
+                zIndex: 20,
+                animation: 'floatUp 3s ease-out forwards',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              +{fs.score}점
+            </div>
+          ))}
 
           {/* 지뢰들 */}
           {landmines.map(landmine => (

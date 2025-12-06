@@ -15,7 +15,7 @@ interface GameState {
   remainingBlocks: number;
   words: Word[];
   landmines: Landmine[];
-  activeVirus: { type: VirusType | null; duration: number };
+  activeVirus: { type: VirusType | null; duration: number; hasSpawned: boolean };
   totalPlayTime: number; // ms
   stageTime: number; // ms
   inputValue: string;
@@ -24,6 +24,15 @@ interface GameState {
   landmineIdCounter: number;
   isQuitModalVisible: boolean;
   clearedWordsCount: number; // Added: Track number of cleared words
+  floatingScores: FloatingScore[];
+}
+
+interface FloatingScore {
+  id: number;
+  x: number;
+  y: number;
+  score: number;
+  createdAt: number;
 }
 
 // Zustand 스토어의 액션(Actions) 타입을 정의합니다.
@@ -72,7 +81,7 @@ const initialState: Omit<GameState, 'wordList'> = {
   remainingBlocks: 12,
   words: [],
   landmines: [],
-  activeVirus: { type: null, duration: 0 },
+  activeVirus: { type: null, duration: 0, hasSpawned: false },
   totalPlayTime: 0,
   stageTime: 0,
   inputValue: '',
@@ -80,6 +89,7 @@ const initialState: Omit<GameState, 'wordList'> = {
   landmineIdCounter: 0,
   isQuitModalVisible: false,
   clearedWordsCount: 0,
+  floatingScores: [],
 };
 
 // Zustand 스토어를 생성합니다.
@@ -124,20 +134,43 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       stage: state.stage + 1,
       gameStatus: 'playing',
       words: [],
-      landmines: [],
+      // landmines: [], // Keep landmines from previous stage
       inputValue: '',
-      activeVirus: { type: null, duration: 0 },
+      activeVirus: { type: null, duration: 0, hasSpawned: false },
       stageTime: 0,
       clearedWordsCount: 0,
+      floatingScores: [],
     }));
     // Note: The wordList for the new stage is fetched by useGameEffects
   },
 
   tick: (intervalMs) => {
     if (get().gameStatus !== 'playing') return;
+
+    // Bomb Virus Logic: Decrement timer
+    const { words } = get();
+    let bombExploded = false;
+
+    const nextWords = words.filter(word => {
+      if (word.timer !== undefined) {
+        word.timer -= intervalMs;
+        if (word.timer <= 0) {
+          bombExploded = true;
+          return false; // Remove exploded bomb
+        }
+      }
+      return true;
+    });
+
+    if (bombExploded) {
+      get().decreaseRemainingBlocks(1);
+    }
+
     set(state => ({
+      words: nextWords.map(w => w.timer !== undefined ? { ...w } : w),
       totalPlayTime: state.totalPlayTime + intervalMs,
       stageTime: state.stageTime + intervalMs,
+      floatingScores: state.floatingScores.filter(s => Date.now() - s.createdAt < 1000),
     }));
   },
 
@@ -148,16 +181,32 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     if (result.collidedWordIds.size > 0) {
       let scoreToAdd = 0;
+      const newFloatingScores: FloatingScore[] = [];
+      const now = Date.now();
+
       // We need to find the words that collided to calculate score.
       // Since moveWords returns survivingWords, the collided ones are filtered out.
       // We iterate over the *original* words to find the collided ones.
       words.forEach(w => {
         if (result.collidedWordIds.has(w.id)) {
-          scoreToAdd += calculateScore(w.text, stage);
+          const wordScore = calculateScore(w.text, stage);
+          scoreToAdd += wordScore;
+
+          newFloatingScores.push({
+            id: Math.random(),
+            x: w.x,
+            y: w.y,
+            score: wordScore,
+            createdAt: now,
+          });
         }
       });
 
       if (scoreToAdd > 0) get().addScore(scoreToAdd);
+
+      if (newFloatingScores.length > 0) {
+        set(state => ({ floatingScores: [...state.floatingScores, ...newFloatingScores] }));
+      }
     }
 
     if (result.fallenCount > 0) get().decreaseRemainingBlocks(result.fallenCount);
@@ -179,17 +228,30 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     const isTimedVirusActive = TIMED_VIRUSES.includes(activeVirus.type as VirusType);
     const hasSpecialWord = words.some(word => word.isSpecial);
 
+    // Limit spawn for Math and Bomb to 1 time
+    let virusTypeForSpawn = activeVirus.type;
+    if (['math', 'bomb'].includes(activeVirus.type as string) && activeVirus.hasSpawned) {
+      virusTypeForSpawn = null;
+    }
+
     const { newWords, nextId } = spawnWords(
       words,
       wordList,
       wordIdCounter,
       count,
       hasSpecialWord,
-      isTimedVirusActive
+      virusTypeForSpawn
     );
 
     if (newWords.length > 0) {
-      set({ words: [...words, ...newWords], wordIdCounter: nextId });
+      const newState: Partial<GameState> = { words: [...words, ...newWords], wordIdCounter: nextId };
+
+      // Mark as spawned if we just generated words under math/bomb influence
+      if (['math', 'bomb'].includes(activeVirus.type as string) && !activeVirus.hasSpawned) {
+        newState.activeVirus = { ...activeVirus, hasSpawned: true };
+      }
+
+      set(newState);
     }
   },
 
@@ -202,15 +264,67 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
   activateVirus: (virus, specialWord) => {
     const duration = getVirusDuration(virus);
 
-    set({ activeVirus: { type: virus, duration } });
+    set({ activeVirus: { type: virus, duration, hasSpawned: false } });
 
     if (virus === 'reconstruction') get().resetRemainingBlocks();
-    if (virus === 'annihilator') get().clearWords();
+    if (virus === 'reconstruction') get().resetRemainingBlocks();
+
+    if (virus === 'annihilator') {
+      const { words, stage } = get();
+      if (words.length > 0) {
+        let scoreToAdd = 0;
+        const newFloatingScores: FloatingScore[] = [];
+        const now = Date.now();
+
+        words.forEach(w => {
+          const wordScore = calculateScore(w.text, stage);
+          scoreToAdd += wordScore;
+
+          newFloatingScores.push({
+            id: Math.random(),
+            x: w.x,
+            y: w.y,
+            score: wordScore,
+            createdAt: now,
+          });
+        });
+
+        get().addScore(scoreToAdd);
+        set(state => ({
+          floatingScores: [...state.floatingScores, ...newFloatingScores],
+          clearedWordsCount: state.clearedWordsCount + words.length // Should annihilator count as cleared? Assuming yes based on "score received" context
+        }));
+      }
+      get().clearWords();
+    }
     if (virus === 'gang') get().spawnWords(5);
     if (virus === 'hide-and-seek') get().toggleWordsVisibility(true);
 
     if (virus === 'landmine' && specialWord) {
       get().addLandmine(specialWord.x, specialWord.y);
+    }
+
+    if (virus === 'landmine-field') {
+      const { words, landmineIdCounter, landmines } = get();
+      let currentId = landmineIdCounter;
+
+      const newLandmines: Landmine[] = [];
+
+      // Convert all existing words to landmines
+      words.forEach(w => {
+        newLandmines.push({ id: currentId++, x: w.x, y: w.y });
+      });
+
+      // Also convert the triggered special word to landmine
+      if (specialWord) {
+        newLandmines.push({ id: currentId++, x: specialWord.x, y: specialWord.y });
+      }
+
+      set({
+        words: [], // Clear all words
+        landmines: [...landmines, ...newLandmines],
+        landmineIdCounter: currentId
+      });
     }
   },
 
@@ -223,7 +337,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       if (activeVirus.type === 'hide-and-seek') {
         toggleWordsVisibility(false);
       }
-      set({ activeVirus: { type: null, duration: 0 } });
+      set({ activeVirus: { type: null, duration: 0, hasSpawned: false } });
     } else {
       set({ activeVirus: { ...activeVirus, duration: newDuration } });
     }
@@ -236,7 +350,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     const removed: Word[] = [];
     const remaining = words.filter(word => {
-      if (word.text === trimmedInput) {
+      if (word.mathAnswer !== undefined) {
+        if (word.mathAnswer.toString() === trimmedInput) {
+          removed.push(word);
+          return false;
+        }
+      } else if (word.text === trimmedInput) {
         removed.push(word);
         return false;
       }
@@ -246,8 +365,35 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     if (removed.length > 0) {
       set({ words: remaining });
 
-      const scoreToAdd = removed.reduce((acc, word) => acc + calculateScore(word.text, stage), 0);
+      let scoreToAdd = 0;
+      const newFloatingScores: FloatingScore[] = [];
+      const now = Date.now();
+
+      removed.forEach(word => {
+        let wordScore = calculateScore(word.text, stage);
+
+        // Math Virus Score Logic: Answer * 100
+        if (word.mathAnswer !== undefined) {
+          wordScore = word.mathAnswer * 100;
+        }
+
+        // Add floating score for ALL words
+        newFloatingScores.push({
+          id: Math.random(), // Simple ID
+          x: word.x,
+          y: word.y,
+          score: wordScore,
+          createdAt: now,
+        });
+
+        scoreToAdd += wordScore;
+      });
+
       get().addScore(scoreToAdd);
+
+      if (newFloatingScores.length > 0) {
+        set(state => ({ floatingScores: [...state.floatingScores, ...newFloatingScores] }));
+      }
 
       const specialWord = removed.find(w => w.isSpecial);
       if (specialWord) {
@@ -260,7 +406,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       const hiddenWord = removed.find(w => w.isHidden);
       if (hiddenWord) {
         toggleWordsVisibility(false);
-        set({ activeVirus: { type: null, duration: 0 } });
+        set({ activeVirus: { type: null, duration: 0, hasSpawned: false } });
       }
     }
 
