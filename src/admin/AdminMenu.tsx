@@ -5,7 +5,7 @@ const AdminMenu: React.FC = () => {
   const activeStyle = { fontWeight: 'bold', color: '#0000A8' };
 
   return (
-    <aside style={{ width: '250px', borderRight: '2px solid #848484', padding: '20px' }}>
+    <aside style={{ width: '325px', borderRight: '2px solid #848484', padding: '20px' }}>
       <h2 style={{ marginTop: 0 }}>관리자 메뉴</h2>
       <nav>
         <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -39,6 +39,14 @@ const AdminMenu: React.FC = () => {
               style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
             >
               단어 관리 (manage_words)
+            </NavLink>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <NavLink
+              to="/admin/manage-users"
+              style={({ isActive }) => isActive ? activeStyle : { textDecoration: 'none' }}
+            >
+              사용자 관리 (manage_users)
             </NavLink>
           </li>
         </ul>

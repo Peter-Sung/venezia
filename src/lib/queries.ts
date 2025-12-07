@@ -234,3 +234,40 @@ export const fetchScoreRank = async (period: string, score: number) => {
 
   return data; // Returns rank (number)
 };
+
+export const checkWordExists = async (text: string): Promise<boolean> => {
+  const { count, error } = await supabase
+    .from('words')
+    .select('id', { count: 'exact', head: true })
+    .eq('text', text);
+
+  if (error) {
+    console.error('Error checking word existence:', error);
+    // In case of error, you might want to treat it as "unknown" or throw.
+    // For safety, let's treat it as not existing or handle error upstream.
+    throw new Error(error.message);
+  }
+
+  return count !== null && count > 0;
+};
+
+export const fetchAdminUsers = async (
+  page: number,
+  pageSize: number,
+  sortColumn: string = 'created_at',
+  sortDirection: 'asc' | 'desc' = 'desc'
+) => {
+  const { data, error } = await supabase.rpc('get_admin_users', {
+    page_number: page,
+    page_size: pageSize,
+    sort_column: sortColumn,
+    sort_direction: sortDirection,
+  });
+
+  if (error) {
+    console.error('Error fetching admin users:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};

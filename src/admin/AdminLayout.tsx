@@ -5,6 +5,7 @@ import EditFallDuration from './pages/EditFallDuration';
 import EditSpawnInterval from './pages/EditSpawnInterval';
 import EditClearWordCount from './pages/EditClearWordCount';
 import ManageWords from './pages/ManageWords';
+import ManageUsers from './pages/ManageUsers';
 import AdminLogin from './pages/AdminLogin';
 import './admin.css';
 
@@ -44,9 +45,9 @@ const AdminLayout: React.FC = () => {
         <Routes>
           <Route path="fall-duration" element={<EditFallDuration />} />
           <Route path="spawn-interval" element={<EditSpawnInterval />} />
-          <Route path="spawn-interval" element={<EditSpawnInterval />} />
           <Route path="clear-word-count" element={<EditClearWordCount />} />
           <Route path="manage-words" element={<ManageWords />} />
+          <Route path="manage-users" element={<ManageUsers />} />
           <Route index element={<div>관리자 페이지입니다. 메뉴를 선택해주세요.</div>} />
         </Routes>
       </main>

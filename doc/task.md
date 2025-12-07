@@ -50,3 +50,17 @@
     - [ ] `src/admin/pages/WordManagePage.tsx`: 반려 사유 입력 모달 및 처리 로직
 - [ ] **게임 연동**
     - [ ] `src/domains/game/wordService.ts`: `getWordsForStage`에서 공식 단어와 승인된 유저 단어를 혼합하여 가져오도록 쿼리 수정
+
+## 5. 관리자 페이지 개선 (Admin Improvements)
+- [x] **UI 개선**
+    - [x] `AdminMenu.tsx`: 사이드바 너비 30% 확장 (250px -> 325px)
+- [x] **단어 관리 개선**
+    - [x] `ManageWords.tsx`: 새 단어 추가 기본값 변경 (Min 1, Max 10)
+    - [x] `src/lib/queries.ts`: 단어 중복 체크 API (`checkWordExists`) 추가
+    - [x] `ManageWords.tsx`: 입력 시 실시간 중복 체크 및 UI 표시
+    - [x] **사용자 관리 (User Management)**
+        - [x] Create RPC `get_admin_users` (SQL executed by user)
+        - [x] `src/lib/queries.ts`: `fetchAdminUsers` 추가
+        - [x] `ManageUsers.tsx`: 사용자 목록 조회, 정렬, 페이징 UI 구현
+        - [x] `AdminMenu.tsx`: 메뉴 링크 추가
+        - [x] `AdminLayout.tsx`: 라우트 추가

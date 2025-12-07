@@ -1,6 +1,15 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.game_logs (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  player_id bigint NOT NULL,
+  score integer NOT NULL,
+  play_at text NOT NULL,
+  played_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT game_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT game_logs_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id)
+);
 CREATE TABLE public.players (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   nickname text NOT NULL UNIQUE,
@@ -8,6 +17,7 @@ CREATE TABLE public.players (
   cumulative_points integer NOT NULL DEFAULT 0,
   level text NOT NULL DEFAULT '해골'::text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  drop_point double precision NOT NULL DEFAULT 0,
   CONSTRAINT players_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.scores (
